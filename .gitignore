@@ -1,0 +1,16 @@
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.jks
+*.keystore
+node_modules/
+.gradle/
+build/
+dist/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+local/
