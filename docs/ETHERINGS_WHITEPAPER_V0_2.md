@@ -1,10 +1,16 @@
 # EtheRings Whitepaper v0.2
-## Move. Play. Collect.
+## In Rings We Trust
+
+**Move. Play. Collect.**
 
 **Status:** CURRENT\
 **Version:** 0.2\
 **Date:** September 12, 2026
 **Master draft language:** English
+
+**Revision:** September 13, 2026 — Alpha architecture keeps ERT off-chain,
+moves ERU to Solana through a separate transition gate, and uses reconciled
+mixed settlement.
 
 > This document describes the current direction of EtheRings and supersedes the old whitepaper as the product master draft. Historical documents are preserved as records of the concept's evolution, but they do not take precedence over explicitly recorded current decisions.
 
@@ -132,7 +138,7 @@ The goal of Alpha is to validate a complete user-facing blockchain flow rather t
 The planned Alpha scope includes:
 
 - Solana integration;
-- on-chain ERT and ERU;
+- off-chain ERT in the existing game ledger and on-chain ERU after an approved transition;
 - user-controlled Smart Accounts;
 - sponsored approved transactions;
 - Silver Ring Boxes;
@@ -331,13 +337,18 @@ Cost depends on the counters of both Cooper Rings before the operation.
 | `1,1` | 250 ERT | 50 ERU | 1.0 ERU | 51.0 ERU |
 
 These are operation-level amounts, not separate charges for each parent. The
-ERT and ERU principal amounts are burned. The additional 2% ERU platform
+ERT principal is reserved and finalized as an exact off-chain ledger debit.
+The ERU principal is burned on Solana, and the additional 2% ERU platform
 commission is transferred to the project treasury. Network costs are separate
 and are not included in this table. The commission is not another breeding use
 or an additional mint fee. See
 [Fees, Royalties and Transaction Costs](#fees-royalties-and-transaction-costs).
 
-After a successful operation, the counters of both Cooper Rings increase atomically by `+1`.
+The ERU burn, fee, replay protection, and Box issuance are atomic inside one
+Solana transaction. PostgreSQL and Solana do not share one atomic transaction.
+After verified chain finality, the ERT debit and both Cooper counters finalize
+exactly once through reconciliation. Timeout or one missing-signature response
+is an unknown state, not an automatic refund or reservation release.
 
 A valid operation has a **100% success probability** after all eligibility and payment checks pass.
 
@@ -358,7 +369,7 @@ Opening the Box creates a Silver Ring NFT.
 This flow provides one complete vertical scenario for validating:
 
 - off-chain eligibility;
-- ERT/ERU settlement;
+- reconciled off-chain ERT and on-chain ERU settlement;
 - Smart Account authorization;
 - sponsored transaction flow;
 - on-chain Box ownership;
@@ -587,9 +598,9 @@ The following remain off-chain:
 
 ### On-Chain Where It Creates Value
 
-The following may be placed on-chain where appropriate:
+The following are placed on-chain where approved:
 
-- token balances/supply after those assets move on-chain;
+- ERU balances/supply after the approved Alpha transition;
 - NFT ownership;
 - Ring/Box asset identity;
 - authoritative NFT gameplay state;
@@ -615,7 +626,9 @@ The product needs:
 - practical integration with mobile UX;
 - the ability to hide unnecessary Web3 complexity from ordinary users.
 
-Solana is selected as the blockchain foundation for Alpha and the future EtheRings on-chain economy.
+Solana is selected as the blockchain foundation for Alpha ERU, Silver assets,
+and the future approved on-chain economy. ERT remains an off-chain game
+currency in the backend/PostgreSQL accounting system.
 
 Specific providers, Smart Account implementations, and production authorities must only be selected after technical and security validation.
 
@@ -645,6 +658,12 @@ EtheRings uses two game-economy assets with different roles.
 
 ERT is the primary utility resource of the Move/game economy.
 
+ERT remains an exact off-chain game currency in the existing
+backend/PostgreSQL accounting system. Rewards and expenses are audited ledger
+credits and debits; an expense is not a Solana token burn. No ERT mint, wrapped
+token, bridge, redemption claim, or public trading path is approved. Any future
+change requires another explicit owner decision.
+
 It is used in mechanics such as:
 
 - progression;
@@ -663,6 +682,12 @@ ERU is used in less frequent economic and NFT-related actions, including:
 - gameplay rewards;
 - economy settlement/burn flows.
 
+ERU becomes the on-chain Solana token for Alpha. The currently shipped MVP
+still has off-chain ERU records; those are not chain balances. Before public
+Alpha rollout, a separate decision must define legacy-balance treatment,
+cutover, old-client behavior, reconciliation, and rollback. No automatic `1:1`
+conversion, compensation mint, deletion, reset, or double-counting is implied.
+
 ### Fees, Royalties and Transaction Costs
 
 Game principal costs, platform commissions, creator royalties, and blockchain
@@ -676,7 +701,7 @@ behavior and do not automatically become final Mainnet policy.
 | Operation | Base amount | Additional charge | Payer | Recipient or treatment |
 |---|---|---|---|---|
 | Covered ERU spending or transfer | ERU principal defined by the mechanic | 2% of ERU principal | User | Full principal reaches its intended recipient or is burned; commission goes separately to project treasury |
-| Alpha Cooper breeding | ERT and ERU principal from the approved 2x2 counter matrix | 2% of ERU principal | User | Both principals are burned; commission goes separately to project treasury |
+| Alpha Cooper breeding | ERT and ERU principal from the approved 2x2 counter matrix | 2% of ERU principal | User | ERT is an off-chain ledger debit; ERU principal is burned and commission goes separately to project treasury |
 | Alpha marketplace sale of an EtheRings NFT | Seller's SOL list price | 2% platform commission plus 4% EtheRings creator royalty | Buyer | Seller receives the full list price; platform treasury and royalty recipient receive separate additive payments |
 | Free NFT mint or NFT reward issuance | No sale price | No platform commission; no marketplace royalty leg | No monetary platform charge | Network execution cost, if any, remains separate |
 | Direct on-chain user-to-user NFT transfer | No sale price | No platform commission; no marketplace royalty leg | No monetary platform charge | Transfer cooldown rules still apply; network execution cost remains separate |
@@ -741,7 +766,9 @@ repository.
 
 ### Test Environment vs Mainnet Tokenomics
 
-Alpha/Testnet may use a dedicated technical token configuration to validate contracts, supply controls, burns, fees, and reconciliation.
+Alpha/Devnet may use a dedicated ERU technical token configuration to validate
+contracts, supply controls, burns, fees, and reconciliation. ERT remains in
+the isolated off-chain game ledger.
 
 This configuration must not automatically be interpreted as final Mainnet distribution or tokenomics.
 
@@ -804,7 +831,7 @@ Key requirements:
 
 - server-authoritative activity validation;
 - idempotent economy operations;
-- atomic token/asset settlement where possible;
+- atomic on-chain token/asset settlement where possible and explicit reconciliation across PostgreSQL/Solana;
 - replay protection;
 - explicit pending/confirmed/failed states;
 - reconciliation between chain and backend;
@@ -839,14 +866,16 @@ Completed:
 
 This is the current development stage of EtheRings.
 
-As of Whitepaper v0.2, the blockchain Alpha architecture and planning are prepared, and Solana runtime integration is the next active development stage.
+As revised on September 13, 2026, the blockchain Alpha architecture and
+planning are prepared, and implementation has not started. The working target
+is a dependency-driven 28-day Alpha plan, not a completion guarantee.
 
 Alpha includes:
 
 - Solana integration;
 - Smart Accounts;
 - sponsored transactions;
-- on-chain ERT/ERU;
+- off-chain ERT and on-chain ERU after the approved transition;
 - Silver Ring Box;
 - Silver NFT;
 - on-chain ownership/state;
@@ -922,7 +951,9 @@ If an exact formula, probability, token cost, supply, or authority model has not
 
 ## 29. EtheRings in One Formula
 
-**EtheRings is a mobile game built around Move. Play. Collect.**
+**In Rings We Trust**
+
+EtheRings is a mobile game built around **Move. Play. Collect.**
 
 Real-world movement feeds the game economy.\
 Rings connect progression, gameplay, and collection.\

@@ -2,11 +2,13 @@
 
 ![EtheRings logo](assets/etherings-logo-gold.png)
 
-**Move. Play. Collect.**
+**In Rings We Trust**
+
+*Move. Play. Collect.*
 
 EtheRings is a mobile game where real-world movement feeds progression, Rings
-connect gameplay and collecting, and blockchain provides verifiable ownership
-for the on-chain economy.
+connect gameplay and collecting, and the planned blockchain layer will provide
+verifiable ownership for selected on-chain assets.
 
 ## Current Status
 
@@ -22,15 +24,18 @@ Live in public testing:
 In development for blockchain Alpha:
 
 - Solana integration;
+- off-chain ERT in the existing backend/PostgreSQL game ledger;
 - Smart Accounts and sponsored approved transactions;
-- on-chain ERT and ERU;
+- on-chain ERU after a separately approved transition from the current MVP state;
 - Silver Ring Box and Silver Ring NFT flows;
 - on-chain ownership and selected gameplay state;
+- the Cooper-to-Silver Box test vertical and Silver progression;
 - an internal SOL marketplace;
-- backend and blockchain reconciliation.
+- reconciliation between PostgreSQL and Solana.
 
 These Alpha items are plans and approved architecture. They are not deployed
-blockchain runtime yet.
+blockchain runtime yet. Cooper and ERT remain off-chain. Mixed operations do
+not form one atomic transaction across PostgreSQL and Solana.
 
 ## Android APK
 
