@@ -1,29 +1,25 @@
 # EtheRings Public Mirror
 
-This repository is a curated public project mirror.
+This repository is a curated public project and hackathon-review mirror.
 
-The authoritative engineering repository is maintained privately.
+The authoritative engineering repository is maintained privately. Private Git history is not mirrored here.
 
-This repository intentionally contains only materials selected for public
-review.
+## Publication baseline
 
-It may not include every internal engineering document or implementation
-detail.
+Private source baseline for this export:
 
-Implementation claims in this repository must be supported by public evidence.
+**e6833d64ca6b19d5e6bde5490595a2d56c385fc3**
 
-## Current Public Allowlist
+## Current public allowlist
 
-- `README.md`;
-- `docs/ETHERINGS_WHITEPAPER_V0_2.md`;
-- `docs/HACKATHON.md`;
-- `assets/etherings-logo-gold.png`;
-- this manifest and `PUBLIC_MIRROR_SYNC_POLICY.md`.
+- README.md and .env.example
+- PUBLIC_MIRROR_MANIFEST.md and PUBLIC_MIRROR_SYNC_POLICY.md
+- public assets
+- current public Whitepaper and hackathon/architecture/security docs
+- backend/ selected Alpha source, schemas and local tests
+- programs/ selected ERU Gateway, ERU Hook and Silver program source
+- android/ selected main-product Alpha wallet/signing source and focused tests
 
-## Synchronization State
+## Explicit exclusions
 
-The public product documents reflect the September 13, 2026 Alpha architecture
-revision: ERT and Cooper remain off-chain, while ERU and Silver assets are
-planned for Solana Alpha. Detailed implementation contracts, operational
-material, private evidence, and infrastructure information remain in the
-private engineering repository.
+The mirror does not publish private Git history, production/VPS runbooks, operational blockers/handoffs, agent instructions, private RPC/API credentials, signer/wallet secrets, governance/deployment operational scripts, internal security evidence, raw proof logs, Trust Wallet Core binary artifacts or private user/tester data.

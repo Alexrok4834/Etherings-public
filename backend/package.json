@@ -1,0 +1,21 @@
+{
+  "name": "etherings-alpha-auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node --check src/auth.js && node --check src/server.js && node --check src/mail.js && node --check src/wallet.js && node --check src/eru.js && node --check src/hybrid-ert.js && node --check src/silver-first-entry.js && node --check src/silver-chain.js && node --check src/main.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@solana/kit": "8.3.0",
+    "@solana-program/compute-budget": "0.18.1",
+    "@solana-program/token-2022": "0.18.0",
+    "bs58": "4.0.1",
+    "pg": "8.16.3",
+    "resend": "6.28.1"
+  }
+}
