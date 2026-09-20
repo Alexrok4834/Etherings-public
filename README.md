@@ -8,7 +8,7 @@
 ![Hackathon](https://img.shields.io/badge/Colosseum-Crypto%20World's%20Fair%202026-14F195)
 ![License: MIT](https://img.shields.io/badge/License-MIT-F2C176)
 
-> A mobile game where real-world movement creates resources, gameplay gives them purpose, and collectible Rings connect progression with verifiable digital ownership.
+> A mobile game where movement creates resources, Rings connect progression and gameplay, and blockchain makes selected ownership and settlement verifiable.
 
 [Demo Video](https://youtube.com/shorts/-swQa1foF2M?feature=share) · [Android MVP](https://app.etherings.xyz/download/android/etherings.apk) · [X / Twitter](https://x.com/etherings2earn) · [Whitepaper](docs/ETHERINGS_WHITEPAPER_V0_2.md) · [Hackathon disclosure](docs/HACKATHON.md) · [Architecture](docs/ARCHITECTURE.md)
 
@@ -16,42 +16,77 @@
 
 ## What EtheRings Is
 
-EtheRings is built around one loop:
+EtheRings is built around one connected loop:
 
-**Move → Resources → Play → Progress → Collect → New Utility**
+**Move → Earn → Play → Progress → Collect → New Utility**
 
-Movement is not intended to be the whole game. The existing Android MVP already has automatic step tracking, server-authoritative Move-to-Earn, Draw/Raffle, Cooper Rings, inventory, equipment and progression.
+Movement is the entry point, not the whole product. Rings and the game economy connect Move-to-Earn with progression, Mint, Raffle, Staking, Match-3, Marketplace and future rarity development.
 
-The Alpha adds Solana where it creates a clear product benefit: user-controlled ownership, scarce digital assets, transfers and economic settlement.
+The goal is to make the collection useful across the game instead of treating NFTs as separate pictures or wallet-only assets.
 
 ## Problem
 
-Many Move-to-Earn products turn walking into the entire product and make token rewards the primary reason to participate. At the same time, Web3 UX often asks normal users to understand wallets, gas and blockchain mechanics before they can enjoy the game.
+Many Move-to-Earn products turn walking into the entire product and make token rewards the primary reason to participate. At the same time, Web3 UX often adds friction before a player can simply enjoy the game.
 
-## Approach
+EtheRings takes a different approach: movement creates resources, gameplay gives those resources purpose, and collecting creates long-term progression and utility.
 
-EtheRings keeps high-frequency gameplay and real-world activity validation off-chain, while moving selected ownership and settlement boundaries on-chain.
+## Core Game Architecture
 
-- **ERT and Cooper Rings:** authoritative off-chain game state.
-- **ERU:** Token-2022 asset for the Alpha economy.
-- **Silver Boxes and Silver Rings:** Token-2022 assets with typed on-chain state.
-- **Android wallet:** embedded self-custody with local signing.
-- **Backend ↔ Solana:** explicit reconciliation; never represented as one cross-system atomic transaction.
+EtheRings uses two connected game-economy assets:
 
-The goal is simple: the player should experience a game first, while blockchain quietly improves ownership and settlement.
+- **ERT** — the primary resource generated through Move-to-Earn and used across progression mechanics;
+- **ERU** — the blockchain-connected economy asset used in less frequent economic, progression and reward flows.
+
+NFT Rings sit at the center of the system.
+
+~~~text
+                         ┌──────────────┐
+                         │     ERT      │
+                         └──────┬───────┘
+                                │
+                ┌───────────────┼────────────────┐
+                ▼               ▼                ▼
+           Level Up            Mint       Rarity Upgrade
+                ▲               ▲                ▲
+                │               │                │
+M2E ──→ ERT     │        ┌──────┴──────┐         │
+                │        │     NFT     │─────────┘
+                │        └──────┬──────┘
+                │               │
+                │        ┌──────┼───────────────┬───────────────┐
+                │        ▼      ▼               ▼               ▼
+                │     Staking  Match-3        Raffle        Marketplace
+                │        │      │               │               │
+                │        └──┬───┘               │               │
+                │           ▼                   │               │
+                └────────── ERU ◄───────────────┘               │
+                            ▲                                   │
+                            └───────────────────────────────────┘
+~~~
+
+The exact relationships are mechanic-specific, but the principle is simple:
+
+- **M2E** introduces resources into the game loop;
+- **NFTs** connect collecting with gameplay;
+- **Mint** and **Level Up** consume game resources to expand and develop the collection;
+- **Rarity Upgrade** extends long-term progression;
+- **Staking** and **Match-3** give the collection additional utility;
+- **Raffle** connects gameplay with rewards and collectible outcomes;
+- **Marketplace** enables player-to-player exchange of blockchain assets.
+
+This is why EtheRings is not just a Move-to-Earn app. Movement feeds a broader game economy.
 
 ## Why Solana
 
-EtheRings needs a chain suitable for a consumer mobile game:
+Solana is used where blockchain creates product value:
 
-- low transaction cost;
-- fast confirmation;
-- programmable token and asset state;
-- Token-2022 extensions such as Transfer Hook;
-- practical mobile signing;
-- composable program execution.
+- verifiable digital ownership;
+- programmable assets and state;
+- user-authorized economic actions;
+- transfers and marketplace settlement;
+- low-cost, fast transactions suitable for a mobile game.
 
-Solana is used for the parts that benefit from verifiable ownership and enforcement, not as a database for steps or every game action.
+High-frequency gameplay, step validation and anti-cheat remain off-chain.
 
 ## What Works Today
 
@@ -64,7 +99,7 @@ The project entered the hackathon with an existing Android MVP:
 - backend-authoritative Move-to-Earn;
 - off-chain ERT and ERU accounting;
 - Draw / Raffle;
-- Cooper Ring inventory, equipment and progression;
+- Ring inventory, equipment and progression;
 - public Android testing and update infrastructure.
 
 ### Built / proven during the hackathon
@@ -73,7 +108,7 @@ Current test-only Alpha evidence includes:
 
 - fresh verified-email Alpha accounts;
 - Trust Wallet Core 4.8.2 embedded self-custodial wallet;
-- BIP-39 recovery using path m/44'/501'/0'/0';
+- BIP-39 recovery using path `m/44'/501'/0'/0'`;
 - Android Keystore-encrypted local mnemonic storage;
 - explicit account ↔ wallet binding and user Ed25519 signing;
 - Token-2022 ERU Gateway + Transfer Hook enforcement;
@@ -81,50 +116,50 @@ Current test-only Alpha evidence includes:
 - reward exemption, replay isolation and guarded initialization boundaries;
 - backend operation states including pending / confirmed / failed / unknown;
 - restart-safe reconciliation after ambiguous RPC outcomes;
-- Squads 2-of-3 administration for the Silver program;
-- first-entry Silver Box issuance and finalized inventory projection on Devnet;
-- Silver collection initialization and schema migration;
-- Silver Transfer Hook direct-transfer cooldown enforcement on Devnet;
-- negative Hook/account/authority enforcement without finalized unauthorized state changes.
+- Squads 2-of-3 program/config governance on test-only Devnet;
+- on-chain NFT issuance and finalized inventory projection;
+- collection initialization and versioned on-chain asset state;
+- direct-transfer 48-hour cooldown enforcement through Transfer Hook;
+- fail-closed negative Hook/account/authority enforcement.
 
-Silver Box reveal → Silver Ring issuance is the current work area. A local no-reroll/reveal foundation exists, but an oracle integration is not claimed as accepted yet.
+The current work area is the no-reroll NFT reveal / resulting Ring issuance path. A local lifecycle foundation exists, while oracle/runtime acceptance remains a separate gate.
 
 See [docs/HACKATHON.md](docs/HACKATHON.md) for the competition boundary.
 
-## Architecture
+## Technical Implementation
+
+The technical architecture implements the game model above without forcing every action on-chain.
 
 ~~~text
-                     ┌──────────────────────────┐
-                     │       Android app        │
-                     │  gameplay + local wallet │
-                     └────────────┬─────────────┘
-                                  │ HTTPS
-                                  ▼
-                     ┌──────────────────────────┐
-                     │       Game backend       │
-                     │ auth / ERT / Cooper /    │
-                     │ reservations / reconcile │
-                     └───────┬──────────┬───────┘
-                             │          │
-                    PostgreSQL          │ exact intent
-                             │          ▼
-                             │   ┌──────────────────┐
-                             │   │ Android signs    │
-                             │   │ locally          │
-                             │   └────────┬─────────┘
-                             │            │
-                             └────────────┼───────────────┐
-                                          ▼               │
-                               ┌──────────────────────┐    │
-                               │       Solana         │    │
-                               │ ERU Gateway / Hook   │    │
-                               │ Silver program       │    │
-                               │ Token-2022 assets    │    │
-                               └──────────┬───────────┘    │
-                                          │ finalized      │
-                                          └────────────────┘
-                                             reconcile
+┌──────────────────────┐
+│     Android App      │
+│ gameplay + wallet    │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│    Game Backend      │
+│ gameplay / ERT /     │
+│ reservations / sync  │
+└──────┬────────┬──────┘
+       │        │
+       │        │ user-reviewed intent
+       ▼        ▼
+ PostgreSQL   Android local signing
+                │
+                ▼
+         ┌──────────────────┐
+         │      Solana      │
+         │ ERU / NFT state  │
+         │ transfers /      │
+         │ settlement       │
+         └────────┬─────────┘
+                  │ finalized evidence
+                  ▼
+             reconciliation
 ~~~
+
+PostgreSQL and Solana are deliberately not presented as one atomic system. Cross-system operations use reservations, explicit pending/unknown states, finality validation and reconciliation.
 
 More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -132,12 +167,10 @@ More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 | Path | Purpose |
 | --- | --- |
-| backend/ | Curated Alpha auth, wallet binding, ERU/reconciliation and Silver read-model source |
-| programs/eru-gateway/ | ERU Gateway program source |
-| programs/eru-hook/ | ERU Token-2022 Transfer Hook source |
-| programs/silver/ | Silver Box/Ring program source |
-| android/ | Curated Alpha wallet/signing module already integrated into the main Android codebase |
-| docs/ | Architecture, security model, hackathon disclosure and Whitepaper |
+| backend/ | Curated Alpha auth, wallet binding, economy/reconciliation and on-chain read-model source |
+| programs/ | ERU and NFT program source used by the Alpha implementation |
+| android/ | Curated Alpha wallet/signing module integrated into the main Android codebase |
+| docs/ | Product/technical architecture, security model, hackathon disclosure and Whitepaper |
 | assets/ | Public project media |
 
 This is a curated public submission mirror. Operational evidence, private deployment material, credentials and internal development records remain in the private engineering repository.
@@ -167,17 +200,11 @@ npm test
 npm run build
 ~~~
 
-The tests create isolated schemas inside the disposable database. Never point ALPHA_TEST_DATABASE_URL at production data.
+The tests create isolated schemas inside the disposable database. Never point `ALPHA_TEST_DATABASE_URL` at production data.
 
 ### Solana program source
 
-~~~bash
-cargo test --manifest-path programs/eru-gateway/Cargo.toml
-cargo test --manifest-path programs/eru-hook/Cargo.toml
-cargo test --manifest-path programs/silver/Cargo.toml
-~~~
-
-The public mirror intentionally excludes private deployment scripts, signer material and RPC credentials.
+The public `programs/` directory contains the reviewed Rust program source used by the current Alpha implementation. Private deployment scripts, signer material and RPC credentials are intentionally excluded.
 
 ### Android module
 
@@ -191,12 +218,12 @@ For the currently published player build, use the [Android MVP APK](https://app.
 - [x] embedded self-custodial wallet and binding;
 - [x] ERU Gateway / Transfer Hook proof;
 - [x] backend reconciliation and UNKNOWN recovery;
-- [x] Silver first-entry Box and Squads-governed Devnet program;
-- [x] Silver direct-transfer cooldown enforcement;
-- [ ] Box reveal / no-reroll → Silver Ring issuance;
-- [ ] main-product Silver inventory/reveal UI integration;
-- [ ] Cooper → Silver hybrid settlement;
-- [ ] Silver progression and ownership-aware M2E;
+- [x] governed NFT asset program and Devnet ownership path;
+- [x] direct-transfer cooldown enforcement;
+- [ ] no-reroll reveal → Ring issuance;
+- [ ] main-product NFT inventory/reveal UI integration;
+- [ ] hybrid game-economy settlement;
+- [ ] NFT progression and ownership-aware M2E;
 - [ ] fixed-price SOL marketplace;
 - [ ] integrated Alpha acceptance and release path.
 
