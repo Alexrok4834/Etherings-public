@@ -2,6 +2,8 @@
 
 **Move. Play. Collect.**
 
+[Demo Video](https://youtube.com/shorts/-swQa1foF2M?feature=share)
+
 This document separates the product that existed before the competition from implementation performed during the hackathon.
 
 ## Pre-hackathon baseline
