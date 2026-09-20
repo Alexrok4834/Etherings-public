@@ -1,7 +1,5 @@
 # EtheRings Whitepaper v0.2
-## In Rings We Trust
-
-**Move. Play. Collect.**
+## Move. Play. Collect.
 
 **Status:** CURRENT\
 **Version:** 0.2\
@@ -10,7 +8,9 @@
 
 **Revision:** September 13, 2026 — Alpha architecture keeps ERT off-chain,
 moves ERU to Solana through a separate transition gate, and uses reconciled
-mixed settlement.
+mixed settlement under owner decision `OD-ALPHA-0913`.
+
+**Decision update:** September 16, 2026 — MVP -> Alpha and Alpha/Devnet/Testnet -> Mainnet are separate clean starts; Alpha requires email/password registration with email-code activation. Historical cross-release preservation and legacy-balance transition assumptions are SUPERSEDED. This update does not authorize data deletion or deployment.
 
 > This document describes the current direction of EtheRings and supersedes the old whitepaper as the product master draft. Historical documents are preserved as records of the concept's evolution, but they do not take precedence over explicitly recorded current decisions.
 
@@ -133,14 +133,25 @@ Blockchain runtime in the current pre-Alpha MVP is not the source of ownership o
 
 Alpha adds a blockchain layer to the already functioning mobile product.
 
+Alpha starts with new accounts and no inherited user balances/state: MVP users, credentials,
+ERT/ERU, Cooper, progression, sessions and other gameplay data do not migrate.
+This is a clean start of user/economy/runtime state, not a new permanent product or a rebuild of the existing game. Released Alpha is planned as an update of the existing EtheRings Android application, reusing its gameplay, step tracking, Draw, Rings, profile and update experience while integrating accepted blockchain functions into the main Android/backend product. The separate Alpha application and service used in development are proof/reference environments, not the final release identities. Same-package signing, install-over, safe local-state transition and rollback must pass a separately approved release gate.
+The current MVP remains active until a separately approved Alpha launch
+procedure, then becomes frozen historical/baseline evidence; its production
+database and artifacts are not deleted by this decision. New Alpha registration
+uses a unique email and safely hashed password, one-time expiring email code,
+resend/attempt rate limits and enumeration-resistant responses. Only verified
+accounts can access gameplay, economy or wallet; email verification is an
+anti-abuse layer, not complete Sybil protection.
+
 The goal of Alpha is to validate a complete user-facing blockchain flow rather than build an isolated Web3 prototype outside the game.
 
 The planned Alpha scope includes:
 
 - Solana integration;
-- off-chain ERT in the existing game ledger and on-chain ERU after an approved transition;
-- user-controlled Smart Accounts;
-- sponsored approved transactions;
+- off-chain ERT in the Alpha game ledger and on-chain ERU in clean-start Alpha;
+- classic embedded self-custodial Solana wallet with user Ed25519 signing;
+- test-SOL-funded network fees on Devnet/Testnet;
 - Silver Ring Boxes;
 - Silver Rings;
 - on-chain ownership;
@@ -161,6 +172,15 @@ Beta also connects the product more deeply with lore and expands collection util
 ### 4.4 Mainnet / Release
 
 Mainnet release moves EtheRings from a test blockchain architecture into a production economy.
+
+Mainnet is another clean start. No Alpha/Devnet/Testnet account, off-chain or
+on-chain balance/state, ERT/ERU, Cooper, Silver Box/Ring/NFT, level, Point,
+attribute, progression, wallet binding or test mint/program/collection identity
+migrates. There is no bridge, snapshot, `1:1` conversion, redemption,
+compensation or default Mainnet-asset entitlement. Mainnet uses a new
+production database/state, deployments, mints/collections/program identities
+and separate economy. Actual launch/reset needs its own approved procedure;
+no MVP, Alpha or test data is deleted now.
 
 At this stage, production rules for ownership, collections, marketplace activity, and rarity progression are expected to be introduced.
 
@@ -370,8 +390,8 @@ This flow provides one complete vertical scenario for validating:
 
 - off-chain eligibility;
 - reconciled off-chain ERT and on-chain ERU settlement;
-- Smart Account authorization;
-- sponsored transaction flow;
+- user-controlled wallet authorization;
+- user-funded test-network transaction flow;
 - on-chain Box ownership;
 - reveal/mint lifecycle;
 - Silver NFT ownership;
@@ -383,6 +403,7 @@ This flow provides one complete vertical scenario for validating:
 ## 11. Mainnet Ring Transformation
 
 In production/Mainnet, Cooper-to-Silver progression follows a separate **Ring Transformation** system rather than the Alpha two-Cooper test flow.
+It applies only to Cooper created under the future Mainnet economy; no MVP/Alpha Cooper or progression migrates into it.
 
 Core transformation chain:
 
@@ -421,7 +442,7 @@ A Silver Ring Box is a separate on-chain collectible asset.
 
 A Box can:
 
-- belong to a user's Smart Account;
+- belong to a user's self-custodial wallet;
 - be transferred under blockchain ownership rules;
 - be listed on the internal marketplace if its asset state allows it;
 - be opened by its owner.
@@ -600,7 +621,7 @@ The following remain off-chain:
 
 The following are placed on-chain where approved:
 
-- ERU balances/supply after the approved Alpha transition;
+- ERU balances/supply in clean-start Alpha;
 - NFT ownership;
 - Ring/Box asset identity;
 - authoritative NFT gameplay state;
@@ -622,29 +643,29 @@ The product needs:
 - low transaction costs;
 - fast confirmation;
 - programmable assets;
-- sponsored user transactions;
+- user-signed transactions;
 - practical integration with mobile UX;
 - the ability to hide unnecessary Web3 complexity from ordinary users.
 
 Solana is selected as the blockchain foundation for Alpha ERU, Silver assets,
 and the future approved on-chain economy. ERT remains an off-chain game
-currency in the backend/PostgreSQL accounting system.
+currency in NestJS/PostgreSQL under the current target architecture.
 
-Specific providers, Smart Account implementations, and production authorities must only be selected after technical and security validation.
+The selected Alpha wallet uses Trust Wallet Core `4.8.2`, BIP-39 recovery, `m/44'/501'/0'/0'`, Android-only private key/phrase handling, encrypted local storage and ordinary Ed25519 user signing. It remains subject to end-to-end Android wallet -> signed Gateway proof. Mainnet wallet/fee policy and production authorities require separate validation.
 
 ---
 
-## 21. Smart Accounts and UX
+## 21. Self-Custodial Wallet and UX
 
 The goal of EtheRings is not to require players to become blockchain specialists before they can start playing.
 
-The Smart Account model must provide:
+The selected Alpha wallet model must provide:
 
 - user-controlled ownership;
 - explicit approval for sensitive actions;
-- support for sponsored approved transactions;
-- secure recovery;
-- no backend-custodial bypass of user control.
+- test-SOL-funded Devnet/Testnet transactions without mandatory sponsorship;
+- BIP-39 phrase backup and recovery;
+- no backend-custodial authorization-boundary violation of user control.
 
 Application login alone must not grant the server the ability to arbitrarily transfer or sell a user's assets.
 
@@ -659,7 +680,7 @@ EtheRings uses two game-economy assets with different roles.
 ERT is the primary utility resource of the Move/game economy.
 
 ERT remains an exact off-chain game currency in the existing
-backend/PostgreSQL accounting system. Rewards and expenses are audited ledger
+NestJS/PostgreSQL accounting system. Rewards and expenses are audited ledger
 credits and debits; an expense is not a Solana token burn. No ERT mint, wrapped
 token, bridge, redemption claim, or public trading path is approved. Any future
 change requires another explicit owner decision.
@@ -683,10 +704,12 @@ ERU is used in less frequent economic and NFT-related actions, including:
 - economy settlement/burn flows.
 
 ERU becomes the on-chain Solana token for Alpha. The currently shipped MVP
-still has off-chain ERU records; those are not chain balances. Before public
-Alpha rollout, a separate decision must define legacy-balance treatment,
-cutover, old-client behavior, reconciliation, and rollback. No automatic `1:1`
-conversion, compensation mint, deletion, reset, or double-counting is implied.
+still has off-chain ERU records; those are not chain balances. The new Alpha
+test-reserve premint remains required. The earlier
+requirement to decide legacy-balance treatment, cutover, old-client behavior,
+reconciliation and rollback as an MVP-to-Alpha migration is **SUPERSEDED** by
+the clean-start decision. No MVP ERU balance is imported or converted to Alpha.
+Current MVP records remain untouched pending a separate launch procedure.
 
 ### Fees, Royalties and Transaction Costs
 
@@ -741,11 +764,10 @@ on the other, and the SOL-only marketplace settlement does not add an ERU fee.
 This Alpha contract applies to supported EtheRings assets in the internal
 marketplace; it does not promise royalty enforcement on external marketplaces.
 
-The approved Alpha Smart Account design sponsors network fees only for approved
-operations under its configured policy and limits. The marketplace contract
-places its Solana network fee on the approved sponsor as a separate cost.
-Sponsorship is not an unlimited or permanent promise and does not make an
-operation free of principal, commission, or royalty.
+On Devnet/Testnet, the embedded wallet may pay Solana network fees with test SOL;
+this is not a Mainnet fee policy. Network fees remain separate from marketplace
+principal, royalty and platform fee. In particular, user-paid network fees do
+not change the additive 2% ERU platform commission or any approved exemption.
 
 Free NFT minting, NFT reward issuance, direct on-chain user-to-user NFT
 transfer, and ERU issuance/reward credits retain their approved commission
@@ -761,8 +783,14 @@ collections are outside the Alpha marketplace contract. Fees for Genesis paid
 minting, RingShow, Mainnet transformation, third-party collections, and other
 undefined mechanics remain unfinalized; an undefined fee is not `0%`.
 
-Detailed implementation contracts are maintained in the private engineering
-repository.
+Detailed calculation, enforcement, scope, and status remain authoritative in:
+
+- [ERT and ERU Numeric Contract V1](../../TOKEN_NUMERIC_CONTRACT_V1.md);
+- [Fungible Token Architecture V1](../../FUNGIBLE_TOKEN_ARCHITECTURE_V1.md);
+- [Hybrid ERT/ERU Settlement Contract V1](../../HYBRID_ERT_ERU_SETTLEMENT_V1.md);
+- [Alpha Marketplace Contract V1](../../MARKETPLACE_CONTRACT_V1.md);
+- [Cooper Breeding Rules V1](../../COPPER_BREEDING_RULES_V1.md);
+- [NFT Rules Traceability V1](../../NFT_RULES_TRACEABILITY_V1.md).
 
 ### Test Environment vs Mainnet Tokenomics
 
@@ -835,7 +863,7 @@ Key requirements:
 - replay protection;
 - explicit pending/confirmed/failed states;
 - reconciliation between chain and backend;
-- no secrets or authority keys in the mobile client;
+- no administrative, deployment, reserve, or server secrets/authority keys in the mobile client; the user wallet mnemonic/private key is allowed only in the approved encrypted Android Keystore-backed local lifecycle, never in plaintext storage, the APK, logs, or the backend;
 - backend-only records must not be called NFTs before confirmed on-chain identity and ownership exist;
 - auditability of critical economy actions.
 
@@ -873,9 +901,9 @@ is a dependency-driven 28-day Alpha plan, not a completion guarantee.
 Alpha includes:
 
 - Solana integration;
-- Smart Accounts;
-- sponsored transactions;
-- off-chain ERT and on-chain ERU after the approved transition;
+- classic embedded self-custodial wallet;
+- test-SOL-funded Devnet/Testnet transactions;
+- off-chain ERT and on-chain ERU in clean-start Alpha;
 - Silver Ring Box;
 - Silver NFT;
 - on-chain ownership/state;
@@ -951,9 +979,7 @@ If an exact formula, probability, token cost, supply, or authority model has not
 
 ## 29. EtheRings in One Formula
 
-**In Rings We Trust**
-
-EtheRings is a mobile game built around **Move. Play. Collect.**
+**EtheRings is a mobile game built around Move. Play. Collect.**
 
 Real-world movement feeds the game economy.\
 Rings connect progression, gameplay, and collection.\
@@ -986,6 +1012,6 @@ Before the final Mainnet Whitepaper, at least the following must be approved sep
 - RingShow reward formula;
 - Gemstone boundary/random-generation semantics;
 - Potion combine distribution/costs;
-- Mainnet Smart Account/provider/authority model;
+- Mainnet wallet/fee/authority model;
 - Mainnet marketplace fee/royalty details if they differ from Alpha contracts;
 - Genesis allocation, schedule, and mint economics.
