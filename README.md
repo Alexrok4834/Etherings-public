@@ -6,10 +6,11 @@
 
 ![Solana](https://img.shields.io/badge/Solana-Devnet-9945FF)
 ![Hackathon](https://img.shields.io/badge/Colosseum-Crypto%20World's%20Fair%202026-14F195)
+![License: MIT](https://img.shields.io/badge/License-MIT-F2C176)
 
 > A mobile game where real-world movement creates resources, gameplay gives them purpose, and collectible Rings connect progression with verifiable digital ownership.
 
-[Demo Video](https://youtube.com/shorts/-swQa1foF2M?feature=share) · [Android MVP](https://app.etherings.xyz/download/android/etherings.apk) · [Whitepaper](docs/ETHERINGS_WHITEPAPER_V0_2.md) · [Hackathon disclosure](docs/HACKATHON.md) · [Architecture](docs/ARCHITECTURE.md)
+[Demo Video](https://youtube.com/shorts/-swQa1foF2M?feature=share) · [Android MVP](https://app.etherings.xyz/download/android/etherings.apk) · [X / Twitter](https://x.com/etherings2earn) · [Whitepaper](docs/ETHERINGS_WHITEPAPER_V0_2.md) · [Hackathon disclosure](docs/HACKATHON.md) · [Architecture](docs/ARCHITECTURE.md)
 
 ---
 
@@ -213,6 +214,6 @@ This repository has independent public Git history. It is populated only through
 
 See [PUBLIC_MIRROR_SYNC_POLICY.md](PUBLIC_MIRROR_SYNC_POLICY.md).
 
-## License Notice
+## License
 
-Source and materials are published for project and hackathon review. No open-source license is granted unless a LICENSE file is added explicitly.
+MIT — see [LICENSE](LICENSE).
