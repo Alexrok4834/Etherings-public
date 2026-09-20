@@ -9,7 +9,7 @@
 
 > A mobile game where real-world movement creates resources, gameplay gives them purpose, and collectible Rings connect progression with verifiable digital ownership.
 
-[Android MVP](https://app.etherings.xyz/download/android/etherings.apk) · [Whitepaper](docs/ETHERINGS_WHITEPAPER_V0_2.md) · [Hackathon disclosure](docs/HACKATHON.md) · [Architecture](docs/ARCHITECTURE.md)
+[Demo Video](https://youtube.com/shorts/-swQa1foF2M?feature=share) · [Android MVP](https://app.etherings.xyz/download/android/etherings.apk) · [Whitepaper](docs/ETHERINGS_WHITEPAPER_V0_2.md) · [Hackathon disclosure](docs/HACKATHON.md) · [Architecture](docs/ARCHITECTURE.md)
 
 ---
 
