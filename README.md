@@ -14,11 +14,10 @@
 
 ---
 
-## Current Status (2026-09-28)
+## Current Status (2026-09-29)
 
 The first public Alpha test is being prepared. Its launch date and first-build
-contents have not been announced. Do not infer public availability from
-development builds, local checks, or Devnet validation.
+contents have not been announced. Development builds are not public releases.
 
 The Android MVP is the earlier off-chain version of the same product. Its
 shutdown is planned as part of the transition. Any MVP build or APK is not an
@@ -36,14 +35,11 @@ Alpha test build; this repository does not provide an Alpha APK. Check the
   with user Ed25519 signing. Devnet/Testnet network fees use user-held test
   SOL; Smart Accounts and mandatory transaction sponsorship are not Alpha
   scope.
-- Silver Level-Up prices, the additive 2% ERU fee, +6 Points, and their
-  implementation status are documented in the [Whitepaper](docs/ETHERINGS_WHITEPAPER_V0_2.md).
+- Cooper and Silver Level-Up prices, the additive 2% ERU fee and their
+  availability are documented in the [Whitepaper](docs/ETHERINGS_WHITEPAPER_V0_2.md).
 
-These rules describe the full approved model, not a claim that every mechanic
-is available to public testers. Alpha functionality is being added and checked
-in stages. Checks for features included in the first build and overall launch
-security remain required. Mainnet is a separate future release with its own
-approval and launch gates.
+Alpha functionality is being added in stages. Mainnet is a separate future
+release with its own approval and security gates.
 
 ---
 
@@ -135,27 +131,22 @@ The project entered the hackathon with an existing Android MVP:
 - Ring inventory, equipment and progression;
 - public Android testing and update infrastructure.
 
-### Built / proven during the hackathon
+### Demonstrated in the test-only Alpha build
 
-Current test-only Alpha evidence includes:
+The development build has demonstrated:
 
-- fresh verified-email Alpha accounts;
+- account registration with an email confirmation code;
 - Trust Wallet Core 4.8.2 embedded self-custodial wallet;
-- BIP-39 recovery using path `m/44'/501'/0'/0'`;
-- Android Keystore-encrypted local mnemonic storage;
-- explicit account ↔ wallet binding and user Ed25519 signing;
-- Token-2022 ERU Gateway + Transfer Hook enforcement;
-- additive 2% ERU platform fee with full principal preserved;
-- reward exemption, replay isolation and guarded initialization boundaries;
-- backend operation states including pending / confirmed / failed / unknown;
-- restart-safe reconciliation after ambiguous RPC outcomes;
-- Squads 2-of-3 program/config governance on test-only Devnet;
-- on-chain NFT issuance and finalized inventory projection;
-- collection initialization and versioned on-chain asset state;
-- direct-transfer 48-hour cooldown enforcement through Transfer Hook;
-- fail-closed negative Hook/account/authority enforcement.
+- Box opening into a Silver NFT with visible attributes;
+- Ring inventory and gameplay selection;
+- step tracking, ERT earning and activity history;
+- Cooper Level-Up, Points allocation and a user-signed ERU payment.
 
-The Alpha implementation has accepted core capabilities only in recorded DEV/A8 scopes; that does not make them available to public testers. The current Silver Level/Points path remains open. MVP shutdown and the first public Alpha test are separate transition steps.
+Under the hood, Alpha uses wallet-bound Ed25519 signing, a Token-2022 ERU
+Gateway and Transfer Hook, finalized on-chain evidence and backend
+reconciliation. The development network uses Squads 2-of-3 governance.
+These capabilities are not yet an announced public test build. Silver
+Level-Up remains under development; MVP shutdown is a separate transition.
 
 See [docs/HACKATHON.md](docs/HACKATHON.md) for the competition boundary.
 
@@ -200,9 +191,9 @@ More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 | Path | Purpose |
 | --- | --- |
-| backend/ | Curated Alpha auth, wallet binding, economy/reconciliation and on-chain read-model source |
-| programs/ | ERU and NFT program source used by the Alpha implementation |
-| android/ | Curated Alpha wallet/signing module integrated into the main Android codebase |
+| backend/ | Historical curated Alpha auth, wallet binding, economy and Silver first-entry source; not the complete current backend |
+| programs/ | Historical curated ERU and Silver program source; not the complete current on-chain code |
+| android/ | Curated wallet/signing source; see the module README for included boundaries |
 | docs/ | Product/technical architecture, security model, hackathon disclosure and Whitepaper |
 | assets/ | Public project media |
 
@@ -219,29 +210,26 @@ This is a curated public submission mirror. Operational evidence, private deploy
 | Email verification | Resend |
 | Current network | Solana Devnet |
 
-## Quick Start
+## Explore the source snapshot
 
-### Backend checks
-
-Prerequisites: Node.js 24+, npm and a disposable PostgreSQL database.
-
-~~~bash
-cd backend
-npm ci
-export ALPHA_TEST_DATABASE_URL='postgresql://postgres:postgres@127.0.0.1:5432/etherings_alpha_test'
-npm test
-npm run build
-~~~
-
-The tests create isolated schemas inside the disposable database. Never point `ALPHA_TEST_DATABASE_URL` at production data.
+Start with the [mirror manifest](PUBLIC_MIRROR_MANIFEST.md), then read the
+[backend](backend/README.md), [program](programs/README.md) and
+[Android](android/README.md) notes for the included files. This is a bounded
+September 20, 2026 source sample, not a complete or buildable package of the
+current Alpha runtime. No setup command here starts the full product.
 
 ### Solana program source
 
-The public `programs/` directory contains the reviewed Rust program source used by the current Alpha implementation. Private deployment scripts, signer material and RPC credentials are intentionally excluded.
+The public `programs/` directory contains a historical reviewed subset of
+the Rust sources. It is not an exact source package for the current deployed
+programs. Private deployment scripts, signer material and RPC credentials
+are intentionally excluded.
 
 ### Android module
 
-The Android directory contains the reviewed Alpha wallet/signing module from the main EtheRings Android codebase. The Trust Wallet Core AAR is intentionally not redistributed here. See [android/README.md](android/README.md).
+The Android directory contains a curated wallet/signing sample, not a full
+buildable Android application. The Trust Wallet Core AAR is intentionally not
+redistributed here. See [android/README.md](android/README.md).
 
 No APK is linked here: the available historical MVP artifact is not an Alpha
 build, and current service availability is not confirmed in this repository.
@@ -257,11 +245,10 @@ prerequisite.
 
 ### Further Alpha development — incremental
 
-The Alpha implementation continues in stages. Core 1.1–1.5 and Cooper 3.2 are
-accepted only in their recorded DEV/A8 scopes. Silver Level/Points 3.1 remains
-open. Cooper breeding, Draw migration, marketplace, remaining transfer and
-recovery coverage, integrated security, and release acceptance must not be
-presented as complete.
+Alpha development continues in stages. Cooper progression is demonstrated in
+the development build. Silver progression, Cooper breeding, Draw integration,
+marketplace, remaining transfer/recovery behavior and release checks remain
+open.
 
 ### Mainnet — future separate release
 

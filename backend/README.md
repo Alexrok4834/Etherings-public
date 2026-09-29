@@ -1,6 +1,9 @@
 # EtheRings Alpha Backend Modules
 
-Curated public export of the isolated Alpha modules used to prove verified-email accounts, wallet binding, ERU signed intents/reconciliation, hybrid ERT reservations, and Silver first-entry/chain projection.
+Curated September 20, 2026 source snapshot of Alpha modules for verified-email
+accounts, wallet binding, ERU intents/reconciliation, hybrid ERT reservations
+and Silver first-entry/chain projection. Later Alpha backend integrations are
+not included; this directory is not the current deployed service.
 
 The current production MVP backend is not published here and is not modified by this mirror.
 

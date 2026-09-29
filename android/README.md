@@ -1,6 +1,8 @@
 # Android Alpha Wallet Module
 
-This directory publishes the reviewed Alpha wallet/signing module being integrated into the main EtheRings Android product.
+This directory publishes a reviewed September 20, 2026 snapshot of Alpha
+wallet/signing source. It does not include later Android integrations or the
+current full application.
 
 It includes local wallet creation/signing, Android Keystore-backed encrypted wallet storage, exact Gateway message validation and transaction-intent representation.
 

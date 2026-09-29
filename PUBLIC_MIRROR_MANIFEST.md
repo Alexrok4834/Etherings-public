@@ -25,8 +25,18 @@ The mirror does not publish private Git history, production/VPS runbooks, operat
 
 ## Synchronization State
 
-The README and Whitepaper reflect the September 28, 2026 staged Alpha status
-and approved model. ERT and Cooper remain off-chain; Alpha ERU and Silver use
-the approved Solana model. Detailed implementation contracts, operational
-material, private evidence, and infrastructure information remain in the
-private engineering repository.
+Public-facing README, Whitepaper, architecture and hackathon context were
+updated on September 29, 2026. They describe the development-build results
+and approved economy model, not a released Alpha build.
+
+The curated `backend/`, `programs/` and `android/` source sample remains the
+September 20, 2026 submission snapshot. It does **not** include later
+Cooper progression, full Silver lifecycle, current ERU governance/runtime,
+current Android integration, or the complete build/deployment tree. A
+dependency-closed, security-reviewed export of those later changes was not
+established in this publication pass; copying individual changed files would
+misrepresent an incomplete implementation as current. This limitation is
+intentional and the older source is not labeled as today's runtime.
+
+Detailed implementation contracts, operational material, private evidence
+and infrastructure information remain outside the public mirror.

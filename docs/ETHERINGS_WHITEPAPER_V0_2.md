@@ -1,20 +1,14 @@
 # EtheRings Whitepaper v0.2
 ## Move. Play. Collect.
 
-**Status:** CURRENT\
 **Version:** 0.2\
-**Date:** September 12, 2026
-**Master draft language:** English
+**Updated:** September 29, 2026
 
-**Revision:** September 13, 2026 — Alpha architecture keeps ERT off-chain,
-moves ERU to Solana through a separate transition gate, and uses reconciled
-mixed settlement under owner decision `OD-ALPHA-0913`.
-
-**Decision update:** September 16, 2026 — MVP -> Alpha and Alpha/Devnet/Testnet -> Mainnet are separate clean starts; Alpha requires email/password registration with email-code activation. Historical cross-release preservation and legacy-balance transition assumptions are SUPERSEDED. This update does not authorize data deletion or deployment.
-
-**Revision:** September 28, 2026 — staged public Alpha transition; embedded self-custodial wallet with user Ed25519 signing (Smart Accounts are not Alpha scope); approved Silver-only level prices. Implementation status is separate from the full approved model.
-
-> This document describes the current direction of EtheRings and supersedes the old whitepaper as the product master draft. Historical documents are preserved as records of the concept's evolution, but they do not take precedence over explicitly recorded current decisions.
+This version describes the staged MVP-to-Alpha transition. ERT remains
+off-chain, while Alpha ERU uses Solana. Account and economy state do not
+automatically migrate between MVP, Alpha and a future Mainnet release.
+The embedded wallet signs user-approved operations; Silver prices below
+describe the approved model, not a claim that Silver progression is available.
 
 ---
 
@@ -137,7 +131,13 @@ Alpha adds a blockchain layer to the already functioning mobile product.
 
 Alpha starts with new accounts and no inherited user balances/state: MVP users, credentials,
 ERT/ERU, Cooper, progression, sessions and other gameplay data do not migrate.
-This is a clean start of user/economy/runtime state, not a new permanent product or a rebuild of the existing game. Released Alpha is planned as an update of the existing EtheRings Android application, reusing its gameplay, step tracking, Draw, Rings, profile and update experience while integrating accepted blockchain functions into the main Android/backend product. The separate Alpha application and service used in development are proof/reference environments, not the final release identities. Same-package signing, install-over, safe local-state transition and rollback must pass a separately approved release gate.
+This is a clean start of user/economy/runtime state, not a new permanent product
+or a rebuild of the existing game. Alpha is planned as an update of the
+existing EtheRings Android application, reusing gameplay, step tracking,
+Draw, Rings, profile and update experience while adding blockchain functions.
+The development build and service are separate from a public release.
+Compatible signing, safe local-state transition and rollback remain release
+requirements.
 The owner plans to stop MVP service as part of the staged Alpha transition.
 Actual service availability and the launch procedure must be confirmed
 separately. MVP runtime then becomes frozen historical/baseline evidence; its
@@ -149,9 +149,19 @@ anti-abuse layer, not complete Sybil protection.
 
 The goal of Alpha is to validate a complete user-facing blockchain flow rather than build an isolated Web3 prototype outside the game.
 
-**First public Alpha test:** the public test is being prepared. Its launch date and first-build contents have not been announced here. Do not infer public availability from development builds, local tests, or Devnet verification.
+**First public Alpha test:** the public test is being prepared. Its launch date
+and first-build contents have not been announced. Development builds are not
+public releases.
 
-**Further Alpha development:** the product continues to add and validate approved functionality in stages after the first public test. Current internal status is recorded in the Alpha task index; completed development scopes do not imply public availability or release acceptance.
+**Further Alpha development:** approved functionality will be added and
+validated in stages after the first public test.
+
+**Demonstrated in the test-only Alpha build:** registration with an email
+confirmation code, embedded wallet creation, Box opening into a Silver NFT,
+Ring attributes and selection, step tracking with ERT credit and activity
+history, and Cooper Level-Up with an ERU-paid transition. This is development
+status, not the announced contents of the first public build. Silver
+Level-Up remains under development.
 
 The full approved Alpha model includes:
 
@@ -322,9 +332,40 @@ Points are used to develop the main attributes:
 
 Shine is not an allocatable attribute Point.
 
-Cooper Level-Up prices remain in the Copper Level-Up V1 contract. Silver uses the separate fixed table below. These prices define the approved model; they do not establish that Silver progression (Alpha task 3.1) is implemented.
+Cooper Level-Up is implemented in the test-only Alpha build. Its approved
+transition prices are listed here so players can see the whole model. An ERU
+payment includes a separate additive 2% fee. Each Cooper transition grants
+four Points.
 
-### 9.1 Silver Level-Up prices — approved rule, implementation open
+### 9.1 Cooper Level-Up prices
+
+| Transition | ERT | ERU principal | ERU fee (2%) | Total ERU debit | Points |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1→2 | 12 | 0 | 0 | 0 | +4 |
+| 2→3 | 16 | 0 | 0 | 0 | +4 |
+| 3→4 | 20 | 0 | 0 | 0 | +4 |
+| 4→5 | 24 | 30 | 0.60 | 30.60 | +4 |
+| 5→6 | 28 | 0 | 0 | 0 | +4 |
+| 6→7 | 32 | 0 | 0 | 0 | +4 |
+| 7→8 | 36 | 0 | 0 | 0 | +4 |
+| 8→9 | 40 | 0 | 0 | 0 | +4 |
+| 9→10 | 44 | 0 | 0 | 0 | +4 |
+| 10→11 | 48 | 0 | 0 | 0 | +4 |
+| 11→12 | 52 | 0 | 0 | 0 | +4 |
+| 12→13 | 56 | 0 | 0 | 0 | +4 |
+| 13→14 | 60 | 0 | 0 | 0 | +4 |
+| 14→15 | 64 | 0 | 0 | 0 | +4 |
+| 15→16 | 68 | 0 | 0 | 0 | +4 |
+| 16→17 | 72 | 0 | 0 | 0 | +4 |
+| 17→18 | 76 | 0 | 0 | 0 | +4 |
+| 18→19 | 80 | 0 | 0 | 0 | +4 |
+| 19→20 | 84 | 60 | 1.20 | 61.20 | +4 |
+
+Sequential levels 1→20 cost 912 ERT and 90 ERU principal (91.80 ERU
+including fees), granting 76 Points. Earlier signed or completed operations
+are not repriced.
+
+### 9.2 Silver Level-Up prices — approved, not yet implemented
 
 Each row is one transition to the target level. ERT is the final approved base price (the prior 25% uplift and half-up rounding are already included; do not apply them again). A 2% ERU fee applies to ERU principal; total ERU debit is principal plus fee. Silver receives +6 Points per successful level transition. Cooper prices and rules are unchanged. Previously signed or executed operations are not repriced.
 
@@ -350,7 +391,10 @@ Each row is one transition to the target level. ERT is the final approved base p
 | 18→19 | 100 | 0 | 0 | 0 | +6 |
 | 19→20 | 105 | 75 | 1.50 | 76.50 | +6 |
 
-Sequential level 1→5 therefore totals 90 ERT and 38.76 ERU. Levels 1→20 grant 114 Silver Points. This separate Silver table supersedes the earlier shared Cooper/Silver price interpretation for Silver only; Cooper prices remain unchanged. Alpha task 3.1 remains open until its required canonical Ring state, signed settlement, Devnet and user-facing checks pass.
+Sequential level 1→5 therefore totals 90 ERT and 38.76 ERU. Levels 1→20
+grant 114 Silver Points. This separate table changes Silver prices only;
+Cooper prices remain unchanged. Silver progression is still under development
+and is not claimed as available to public testers.
 
 ---
 
@@ -686,7 +730,11 @@ Solana is selected as the blockchain foundation for Alpha ERU, Silver assets,
 and the future approved on-chain economy. ERT remains an off-chain game
 currency in NestJS/PostgreSQL under the current target architecture.
 
-The selected Alpha wallet uses Trust Wallet Core `4.8.2`, BIP-39 recovery, `m/44'/501'/0'/0'`, Android-only private key/phrase handling, encrypted local storage and ordinary Ed25519 user signing. It remains subject to end-to-end Android wallet -> signed Gateway proof. Mainnet wallet/fee policy and production authorities require separate validation.
+The selected Alpha wallet uses Trust Wallet Core `4.8.2`, BIP-39 recovery,
+`m/44'/501'/0'/0'`, Android-only private key/phrase handling, encrypted
+local storage and ordinary Ed25519 user signing. User-signed Cooper ERU
+progression has been demonstrated in a test-only build. Mainnet wallet/fee
+policy and production authorities require separate validation.
 
 ---
 
@@ -714,11 +762,11 @@ EtheRings uses two game-economy assets with different roles.
 
 ERT is the primary utility resource of the Move/game economy.
 
-ERT remains an exact off-chain game currency in the existing
-NestJS/PostgreSQL accounting system. Rewards and expenses are audited ledger
+ERT remains an exact off-chain game currency in the backend/PostgreSQL
+accounting system. Rewards and expenses are audited ledger
 credits and debits; an expense is not a Solana token burn. No ERT mint, wrapped
-token, bridge, redemption claim, or public trading path is approved. Any future
-change requires another explicit owner decision.
+token, bridge, redemption claim, or public trading path is part of this model.
+Any future change would require separate approval.
 
 It is used in mechanics such as:
 
@@ -921,7 +969,12 @@ The MVP's documented capabilities were:
 
 ### Alpha — staged public test and further development
 
-The first public Alpha test is being prepared. Its date and build contents are not specified here. Subsequent Alpha development adds functionality in stages. The Alpha task index records Playable Core 1.1–1.5 and Cooper 3.2 accepted only in specified DEV/A8 scopes; Silver Level/Points task 3.1 remains open. Internal, local, Devnet, or device-accepted scopes are not equivalent to public availability, full Alpha completion, or release acceptance.
+The first public Alpha test is being prepared. Its date and build contents
+have not been announced. Subsequent Alpha development adds functionality in
+stages. The test-only build demonstrates the core account, wallet, Silver
+Box/Ring, activity and Cooper progression flows described above. Silver
+Level-Up and other remaining features are still in development; a development
+build is not a public release.
 
 Alpha includes:
 

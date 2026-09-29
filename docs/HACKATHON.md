@@ -1,9 +1,20 @@
 # Crypto World's Fair 2026 — EtheRings Hackathon Disclosure
 
-> Historical hackathon disclosure describing the submission context and
-> direction at that time. It is not the current launch/status source. For the
-> staged Alpha public-test status and current approved model, see the
-> [current README](../README.md) and [Whitepaper](ETHERINGS_WHITEPAPER_V0_2.md).
+## Current context — September 29, 2026
+
+The public Alpha test is being prepared; its date and first-build contents
+have not been announced. In a test-only build, verified-email registration,
+the embedded wallet, Silver Box opening, Ring selection, steps/ERT/history
+and Cooper Level-Up with an ERU payment have been demonstrated. Silver
+progression and release checks remain open. The historical submission
+disclosure below is not a statement of current public availability.
+
+## Historical submission snapshot — September 20, 2026
+
+The following competition disclosure records the earlier work-status
+snapshot. Later development does not change its before/during-hackathon
+boundary. See the [current README](../README.md) and
+[Whitepaper](ETHERINGS_WHITEPAPER_V0_2.md) for today's model.
 
 **Move. Play. Collect.**
 

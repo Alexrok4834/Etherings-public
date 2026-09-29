@@ -2,7 +2,7 @@
 
 ## 1. Product Architecture
 
-EtheRings is a connected game economy built around movement, Rings, progression and collection utility.
+EtheRings is a connected game economy built around movement, Rings, progression and collection utility. The earlier off-chain MVP and the blockchain Alpha are successive versions of one product.
 
 Movement creates resources, but the long-term loop is driven by what players can do with their Rings and resources after they earn them.
 
@@ -203,7 +203,7 @@ A fee-bearing ERU operation preserves the mechanic's principal and adds the plat
 ~~~text
 principal: 30 ERU
 user debit: 30.6 ERU
-principal: 30 ERU
+burned principal: 30 ERU
 platform fee: 0.6 ERU
 ~~~
 
@@ -235,7 +235,7 @@ An ambiguous result is represented as **UNKNOWN**, not silently treated as failu
 
 NFT transfer rules are enforced by the on-chain asset program rather than only by Android UI.
 
-For the current Alpha model, a qualifying direct transfer starts or resets a **48-hour gameplay/listing cooldown**.
+In the Alpha model, a qualifying direct transfer starts or resets a **48-hour gameplay/listing cooldown**.
 
 This gives ownership transfers a game-state consequence that is verifiable independently of the client.
 
@@ -258,8 +258,15 @@ User custody and project administration are different trust boundaries.
 
 The blockchain Alpha is not intended to become a permanent second EtheRings product.
 
-The owner plans to stop MVP service as part of the staged transition to Alpha. Actual service availability and the cutover procedure must be confirmed separately; this document does not imply that the MVP is still live or already stopped.
+The MVP-to-Alpha transition starts new account and economy state; MVP balances,
+Rings and sessions are not imported. Alpha is intended to update the existing
+Android/backend product, not become a permanent second game. The test-only
+Alpha build already demonstrates verified-email registration, an embedded
+wallet, Box opening into a Silver NFT, Ring selection, steps/ERT/history and
+Cooper Level-Up with a user-signed ERU payment. Silver Level-Up, Draw
+integration and release acceptance remain open.
 
-Accepted Alpha capabilities are integrated into the existing Android/backend product so the released Alpha becomes the next version of EtheRings.
-
-The first public Alpha test is being prepared. Its launch date and first-build contents have not been announced. Further Alpha development will add and check approved capabilities in stages. Development, Devnet and device validation do not themselves establish public availability or release acceptance. Mainnet is a separate future release with its own approval and security gates. See the [current public status](../README.md#current-status-2026-09-28) and [Whitepaper](ETHERINGS_WHITEPAPER_V0_2.md).
+The first public Alpha test is being prepared; its date and first-build
+contents are not announced. Mainnet is a separate future release. See the
+[current public status](../README.md#current-status-2026-09-29) and
+[Whitepaper](ETHERINGS_WHITEPAPER_V0_2.md).
