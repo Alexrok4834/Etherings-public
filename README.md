@@ -6,51 +6,46 @@
 
 *Move. Play. Collect.*
 
-EtheRings is a mobile game where real-world movement feeds progression, Rings
-connect gameplay and collecting, and the planned blockchain layer will provide
-verifiable ownership for selected on-chain assets.
+EtheRings is one mobile game developed through successive versions. Real-world
+movement feeds progression, Rings connect gameplay and collecting, and selected
+assets use a verifiable on-chain ownership model.
 
-## Current Status
+## Current status — 2026-09-28
 
-Live in public testing:
+The first public Alpha test is being prepared. Its launch date and first-build
+contents have not been announced. Do not infer public availability from
+development builds, local checks, or Devnet validation.
 
-- native Android MVP;
-- automatic step tracking;
-- backend-authoritative Move-to-Earn using the current off-chain game economy;
-- Draw / Raffle;
-- off-chain ERT and ERU;
-- Cooper Rings, inventory, equipment, and progression.
+The Android MVP is the earlier off-chain version of the same product. Its
+shutdown is planned as part of the transition. Any MVP build or APK is not an
+Alpha test build; this repository does not provide an Alpha APK. Check the
+[official website](https://etherings.xyz/) for confirmed public-test updates.
 
-In development for blockchain Alpha:
+### Approved product model
 
-- Solana integration;
-- off-chain ERT in the existing backend/PostgreSQL game ledger;
-- Smart Accounts and sponsored approved transactions;
-- on-chain ERU after a separately approved transition from the current MVP state;
-- Silver Ring Box and Silver Ring NFT flows;
-- on-chain ownership and selected gameplay state;
-- the Cooper-to-Silver Box test vertical and Silver progression;
-- an internal SOL marketplace;
-- reconciliation between PostgreSQL and Solana.
+- ERT remains an off-chain, backend/PostgreSQL-authoritative game currency.
+- MVP ERU records are off-chain and do not migrate; Alpha ERU is the Solana
+  token under a separate clean-start transition.
+- Cooper is an off-chain game Ring, not an NFT. Alpha Silver Boxes and Silver
+  Rings use on-chain identity and ownership.
+- The selected Alpha wallet is a classic embedded self-custodial Solana wallet
+  with user Ed25519 signing. Devnet/Testnet network fees use user-held test
+  SOL; Smart Accounts and mandatory transaction sponsorship are not Alpha
+  scope.
+- Silver Level-Up prices, the additive 2% ERU fee, +6 Points, and their
+  implementation status are documented in the [Whitepaper](docs/ETHERINGS_WHITEPAPER_V0_2.md).
 
-These Alpha items are plans and approved architecture. They are not deployed
-blockchain runtime yet. Cooper and ERT remain off-chain. Mixed operations do
-not form one atomic transaction across PostgreSQL and Solana.
-
-## Android APK
-
-Download the public-testing APK:
-[etherings.apk](https://app.etherings.xyz/download/android/etherings.apk)
-
-`app.etherings.xyz` is the technical APK host and an administrative service. It
-is not the public player application or project landing page.
-
-Public website: Coming soon
+These rules describe the full approved model, not a claim that every mechanic
+is available to public testers. Alpha functionality is being added and checked
+in stages. Checks for features included in the first build and overall launch
+security remain required. Mainnet is a separate future release with its own
+approval and launch gates.
 
 ## Documents
 
 - [EtheRings Whitepaper v0.2](docs/ETHERINGS_WHITEPAPER_V0_2.md)
-- [Crypto World's Fair 2026 disclosure](docs/HACKATHON.md)
+- [Crypto World's Fair 2026 disclosure](docs/HACKATHON.md) — historical
+  submission context; consult the current status above and the Whitepaper.
 
 ## License Notice
 

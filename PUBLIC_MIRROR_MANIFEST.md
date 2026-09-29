@@ -22,8 +22,10 @@ Implementation claims in this repository must be supported by public evidence.
 
 ## Synchronization State
 
-The public product documents reflect the September 13, 2026 Alpha architecture
-revision: ERT and Cooper remain off-chain, while ERU and Silver assets are
-planned for Solana Alpha. Detailed implementation contracts, operational
+The public README and Whitepaper reflect the September 28, 2026 staged Alpha
+status and approved model. The Whitepaper was exported file-by-file from a
+verified private source snapshot; private Git metadata is intentionally not
+published. ERT and Cooper remain off-chain; Alpha ERU and Silver use the
+approved Solana model. Detailed implementation contracts, operational
 material, private evidence, and infrastructure information remain in the
 private engineering repository.

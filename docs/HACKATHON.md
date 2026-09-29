@@ -1,5 +1,10 @@
 # Crypto World's Fair 2026
 
+> Historical hackathon disclosure describing the submission context and
+> direction at that time. It is not the current launch/status source. For the
+> staged Alpha public-test status and current approved model, see the
+> [current README](../README.md) and [Whitepaper](ETHERINGS_WHITEPAPER_V0_2.md).
+
 ## In Rings We Trust
 
 **Move. Play. Collect.**
