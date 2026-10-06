@@ -5,7 +5,7 @@ accounts, wallet binding, ERU intents/reconciliation, hybrid ERT reservations
 and Silver first-entry/chain projection. Later Alpha backend integrations are
 not included; this directory is not the current deployed service.
 
-The current production MVP backend is not published here and is not modified by this mirror.
+The earlier MVP backend is not published here. Public Alpha uses a newer game backend than this historical source sample.
 
 ## Tests
 

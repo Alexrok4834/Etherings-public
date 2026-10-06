@@ -1,4 +1,10 @@
 # EtheRings Whitepaper v0.2
+
+> **HISTORICAL / SUPERSEDED.** This September 2026 document is retained for
+> project history and does not describe the current Public Alpha. Read the
+> [current Public Alpha Whitepaper (PDF)](https://etherings.xyz/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf)
+> for the live Devnet test version. Future features mentioned below are not
+> claims of current availability.
 ## Move. Play. Collect.
 
 **Version:** 0.2\

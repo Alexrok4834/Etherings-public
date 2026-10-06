@@ -1,6 +1,8 @@
 # EtheRings Public Mirror
 
-This repository is a curated public project and hackathon-review mirror.
+This repository is a curated public project and hackathon-review mirror. Its
+public documentation describes the live Solana Devnet Public Alpha; the code
+directories remain an older bounded sample.
 
 The authoritative engineering repository is maintained privately. Private Git history is not mirrored here.
 
@@ -14,7 +16,7 @@ Private commit identifiers and Git history are intentionally not published.
 - README.md and .env.example
 - PUBLIC_MIRROR_MANIFEST.md and PUBLIC_MIRROR_SYNC_POLICY.md
 - public assets
-- current public Whitepaper and hackathon/architecture/security docs
+- public architecture, security and hackathon docs; historical Whitepaper v0.2
 - backend/ selected Alpha source, schemas and local tests
 - programs/ selected ERU Gateway, ERU Hook and Silver program source
 - android/ selected main-product Alpha wallet/signing source and focused tests
@@ -25,18 +27,17 @@ The mirror does not publish private Git history, production/VPS runbooks, operat
 
 ## Synchronization State
 
-Public-facing README, Whitepaper, architecture and hackathon context were
-updated on September 29, 2026. They describe the development-build results
-and approved economy model, not a released Alpha build.
+Public-facing README, architecture and current-context hackathon text reflect
+the live Public Alpha as of October 2026. The [current Whitepaper is a hosted
+PDF](https://etherings.xyz/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf), not
+a source file in this mirror. `docs/ETHERINGS_WHITEPAPER_V0_2.md` is retained
+only as a clearly marked historical, superseded document.
 
 The curated `backend/`, `programs/` and `android/` source sample remains the
-September 20, 2026 submission snapshot. It does **not** include later
-Cooper progression, full Silver lifecycle, current ERU governance/runtime,
-current Android integration, or the complete build/deployment tree. A
-dependency-closed, security-reviewed export of those later changes was not
-established in this publication pass; copying individual changed files would
-misrepresent an incomplete implementation as current. This limitation is
-intentional and the older source is not labeled as today's runtime.
+September 20, 2026 submission snapshot. It does **not** include the complete
+current game, Android app or on-chain feature set. No newer private source or
+history was exported in this documentation update. The older sample is not
+labeled as the live implementation.
 
 Detailed implementation contracts, operational material, private evidence
 and infrastructure information remain outside the public mirror.

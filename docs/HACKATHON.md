@@ -1,20 +1,21 @@
 # Crypto World's Fair 2026 — EtheRings Hackathon Disclosure
 
-## Current context — September 29, 2026
+## Current context — October 2026
 
-The public Alpha test is being prepared; its date and first-build contents
-have not been announced. In a test-only build, verified-email registration,
-the embedded wallet, Silver Box opening, Ring selection, steps/ERT/history
-and Cooper Level-Up with an ERU payment have been demonstrated. Silver
-progression and release checks remain open. The historical submission
-disclosure below is not a statement of current public availability.
+Public Alpha is live as an Android test on Solana Devnet. It includes verified
+email registration, an embedded self-custodial wallet, step tracking and ERT,
+Draw, Cooper and Silver Ring progression, Cooper breeding, Silver Box opening,
+direct Silver transfers and a fixed-price SOL Marketplace for eligible Silver
+assets. The earlier MVP is retired. The disclosure below records what existed
+at the competition snapshot; it is not the current feature list.
 
 ## Historical submission snapshot — September 20, 2026
 
 The following competition disclosure records the earlier work-status
 snapshot. Later development does not change its before/during-hackathon
 boundary. See the [current README](../README.md) and
-[Whitepaper](ETHERINGS_WHITEPAPER_V0_2.md) for today's model.
+[Public Alpha Whitepaper (PDF)](https://etherings.xyz/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf)
+for today's model.
 
 **Move. Play. Collect.**
 
@@ -62,7 +63,7 @@ Accepted within their documented test boundaries:
 - Devnet direct-transfer 48-hour cooldown enforcement;
 - fail-closed negative Hook/account/authority checks.
 
-## Current work
+## Work status at the historical submission
 
 The current Silver work area is Box reveal → Silver Ring issuance.
 
@@ -78,7 +79,7 @@ After the Silver lifecycle, the Alpha plan continues with:
 
 ## Product integration decision
 
-The current production MVP remains live and unchanged during Alpha development.
+At the time of the historical submission, the production MVP remained live and unchanged during Alpha development.
 
 Alpha is the next version of the existing EtheRings product. Isolated Alpha Android/backend environments are used for safe proof work, but accepted capabilities must be integrated into the main product before release.
 
