@@ -14,7 +14,7 @@ at the competition snapshot; it is not the current feature list.
 The following competition disclosure records the earlier work-status
 snapshot. Later development does not change its before/during-hackathon
 boundary. See the [current README](../README.md) and
-[Public Alpha Whitepaper (PDF)](https://etherings.xyz/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf)
+[Public Alpha Whitepaper (PDF)](EtheRings_Public_Alpha_Whitepaper_2026-10.pdf)
 for today's model.
 
 **Move. Play. Collect.**

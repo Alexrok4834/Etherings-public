@@ -24,6 +24,6 @@ This split keeps step counting and frequent gameplay responsive while giving pla
 
 ## Scope and history
 
-The [current Public Alpha Whitepaper (PDF)](https://etherings.xyz/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf) is the detailed public reference. Match-3, staking, gemstones, Gold and Platinum progression and future rarity changes are outside the implemented Public Alpha scope. Mainnet is a separate future release.
+The [current Public Alpha Whitepaper (PDF)](EtheRings_Public_Alpha_Whitepaper_2026-10.pdf) is the detailed public reference. Match-3, staking, gemstones, Gold and Platinum progression and future rarity changes are outside the implemented Public Alpha scope. Mainnet is a separate future release.
 
 The historical `backend/`, `android/` and `programs/` files in this repository are a bounded public source sample. They do not represent the full code for the live game; see the [mirror manifest](../PUBLIC_MIRROR_MANIFEST.md). The [hackathon disclosure](HACKATHON.md) retains its earlier competition-era facts.

@@ -16,7 +16,7 @@ Private commit identifiers and Git history are intentionally not published.
 - README.md and .env.example
 - PUBLIC_MIRROR_MANIFEST.md and PUBLIC_MIRROR_SYNC_POLICY.md
 - public assets
-- public architecture, security and hackathon docs; historical Whitepaper v0.2
+- public architecture, security and hackathon docs; current Public Alpha Whitepaper PDF
 - backend/ selected Alpha source, schemas and local tests
 - programs/ selected ERU Gateway, ERU Hook and Silver program source
 - android/ selected main-product Alpha wallet/signing source and focused tests
@@ -28,10 +28,11 @@ The mirror does not publish private Git history, production/VPS runbooks, operat
 ## Synchronization State
 
 Public-facing README, architecture and current-context hackathon text reflect
-the live Public Alpha as of October 2026. The [current Whitepaper is a hosted
-PDF](https://etherings.xyz/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf), not
-a source file in this mirror. `docs/ETHERINGS_WHITEPAPER_V0_2.md` is retained
-only as a clearly marked historical, superseded document.
+the live Public Alpha as of October 2026. The [current Whitepaper PDF](docs/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf)
+is included in this public mirror and is also available from the
+[official site](https://etherings.xyz/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf).
+The superseded Whitepaper v0.2 was removed from the current tree but remains
+in Git history; public history was not rewritten.
 
 The curated `backend/`, `programs/` and `android/` source sample remains the
 September 20, 2026 submission snapshot. It does **not** include the complete
