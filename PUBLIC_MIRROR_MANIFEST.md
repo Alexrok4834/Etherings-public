@@ -1,8 +1,9 @@
 # EtheRings Public Mirror
 
 This repository is a curated public project and hackathon-review mirror. Its
-public documentation describes the live Solana Devnet Public Alpha; the code
-directories remain an older bounded sample.
+public documentation describes the live Solana Devnet Public Alpha. A small
+`current-alpha/` Cooper rules sample is current; `backend/`, `android/` and
+`programs/` remain older bounded samples.
 
 The authoritative engineering repository is maintained privately. Private Git history is not mirrored here.
 
@@ -20,6 +21,7 @@ Private commit identifiers and Git history are intentionally not published.
 - backend/ selected Alpha source, schemas and local tests
 - programs/ selected ERU Gateway, ERU Hook and Silver program source
 - android/ selected main-product Alpha wallet/signing source and focused tests
+- current-alpha/ reviewed Cooper generation and breeding-price rules with focused local checks
 
 ## Explicit exclusions
 
@@ -35,10 +37,11 @@ The superseded Whitepaper v0.2 was removed from the current tree but remains
 in Git history; public history was not rewritten.
 
 The curated `backend/`, `programs/` and `android/` source sample remains the
-September 20, 2026 submission snapshot. It does **not** include the complete
-current game, Android app or on-chain feature set. No newer private source or
-history was exported in this documentation update. The older sample is not
-labeled as the live implementation.
+September 20, 2026 submission snapshot. The `current-alpha/` sample was
+reviewed and exported from the current shared Cooper rules. Neither sample
+includes the complete current game, Android app or on-chain feature set.
+Private Git history was not exported. The older sample is not labeled as the
+live implementation.
 
 Detailed implementation contracts, operational material, private evidence
 and infrastructure information remain outside the public mirror.
