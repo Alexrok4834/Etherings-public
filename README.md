@@ -63,7 +63,7 @@ For technical readers and hackathon judges:
 - [Hackathon history and disclosure](docs/HACKATHON.md)
 - [Published-code guide](PUBLIC_MIRROR_MANIFEST.md)
 
-**About the code:** This is a curated public repository, **not the complete source code** of the current Android app. The `current-alpha` directory contains a small sample of current Cooper rules; other code directories represent an earlier hackathon stage and do not build the live game.
+**About the code:** This repository does **not** contain everything needed to build the current Android app, game server, or Solana programs. The `current-alpha` directory contains two small rule modules and tests adapted from the current server source. The `backend`, `android`, and `programs` directories contain selected files from the September 2026 hackathon stage; they are not the complete implementation now in use. GitHub's automatic release source archives contain this public repository, not the full source of the downloadable app.
 
 EtheRings is built by Alexey. Follow development and Alpha updates on [X](https://x.com/etherings2earn).
 
