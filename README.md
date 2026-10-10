@@ -4,44 +4,68 @@
 
 **Move. Play. Collect.**
 
-EtheRings is an Android game where walking helps you collect and improve rings. A pair of eligible rings can earn you a sealed box; opening it reveals another ring. Certain items can also be sent or sold to other players.
+EtheRings is an Android game where your everyday steps help you build a collection of Rings. Walk to earn resources, decide how to use them, try your luck in Draw, and discover collectible Silver Ring NFTs that live in your Solana wallet.
 
-[Download the Android test app](https://app.etherings.xyz/download/android/etherings.apk) · [Watch the demo](https://youtube.com/shorts/-swQa1foF2M?feature=share) · [Website](https://etherings.xyz/) · [Read the Whitepaper](docs/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf)
+**The Public Alpha is live on Android 9+ and Solana Devnet.** Come play, explore what's working, and help us make the game better.
 
-## How the game works
+[**Download Public Alpha**](https://app.etherings.xyz/download/android/etherings.apk) · [**Join our Discord**](https://discord.gg/5jQzegWuhz) · [Latest release](https://github.com/Alexrok4834/Etherings-public/releases/latest) · [Website](https://etherings.xyz/) · [Alpha Whitepaper](docs/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf)
 
-The current test has **Cooper** rings, which are game items, and **Silver Ring NFTs**, which belong to your wallet. A sealed **Silver Box NFT** can be opened to receive a ring NFT.
+## What can you do in Alpha?
 
-1. Walk with your phone. Steps accepted by the game earn **ERT**, a resource used to play.
-2. Collect rings, improve them and try your luck in Draw.
-3. Use a pair of eligible game rings to receive a sealed box NFT. Open it to reveal a ring NFT. Boxes can also come from other game rewards.
-4. Keep wallet items, send eligible ones to another player or offer them for a fixed price in the Marketplace. A direct transfer starts a 48-hour game cooldown.
+**Walk and earn.** EtheRings tracks activity on your Android phone. Steps accepted by the game earn **ERT**, a resource you can use in gameplay.
 
-Some actions also use **ERU**, a test token. The [Whitepaper](docs/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf) explains the rules and costs in detail.
+**Choose your next move.** Save ERT to level up your Rings, or spend it on **Draw** for a chance to receive more ERT, ERU, a Cooper Ring, or a sealed Silver Box NFT.
 
-## Try the Public Alpha
+**Build your Ring collection.** You start with a **Cooper Ring**. Cooper and Silver Rings can both be leveled up, and leveling gives you Points to improve their attributes. Once your wallet is ready, you can also receive your first **Silver Box NFT** and open it to discover a **Silver Ring NFT**.
 
-The Android app is in public testing on **Solana Devnet**, a test network. All balances and items in this test have no real monetary value. Features and prices may change, and testers may encounter bugs.
+**Turn progress into new Rings.** In the current Alpha, two eligible **Level 20 Cooper Rings** can be used to create a sealed Silver Box NFT. Opening it reveals a Silver Ring NFT with its own design and attributes.
 
-Install the app, verify your email and create or restore a wallet. Save your wallet recovery phrase somewhere safe: we cannot recover it for you. Some wallet actions require Devnet test SOL to cover network fees.
+**Own and trade NFTs.** Keep eligible Silver Rings and Boxes in your wallet, send them to another player, or list them in the **Marketplace** for a fixed price in test SOL. Transfer restrictions and cooldowns apply; see the [Alpha Whitepaper](docs/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf) for the rules.
 
-If you still have the old EtheRings MVP installed, uninstall it before installing Public Alpha. Uninstalling removes that old app's local data, including steps it has not sent yet. If you already use Public Alpha, follow the app's update instructions to install a newer compatible version over it.
+Walking starts the loop. What you collect, improve, open, and trade is up to you.
 
-Today you can track activity, use Draw, improve rings, breed eligible pairs, open boxes, transfer eligible items and use the Marketplace. Ideas such as Match-3, staking, gemstones and more kinds of rings are future plans, not features of this test.
+## Get started
 
-## Why Solana?
+1. **Download the Android Alpha** (Android 9 or newer) and register with your email.
+2. **Confirm your email and set up your wallet.** You can create a new wallet or restore one you already control.
+3. **Equip a Ring and explore.** Start walking, check your ERT, try Draw, and see how your collection grows.
 
-The game records frequent activity, such as steps, in its own system. Solana records ownership of the NFTs. The player reviews and approves actions involving those items. The [architecture overview](docs/ARCHITECTURE.md) explains the design; the [security overview](docs/SECURITY_MODEL.md) explains how wallet actions are protected.
+Some blockchain actions require **Devnet SOL** for network fees. You can get test SOL from the official Solana Devnet faucet. Never send real Mainnet SOL to a test wallet expecting it to arrive on Devnet.
 
-## What's in this repository?
+**Keep your wallet recovery phrase private.** Save it somewhere safe. No one from EtheRings support will ever need it, and we cannot recover it for you.
 
-This repository helps people explore the project. It is **not the complete source code of the current app**.
+**Coming from the old MVP?** Uninstall the MVP before installing Alpha. Your MVP account, balances, and progress do not transfer into the new Alpha. Uninstalling the old app also removes unsent local data. If you're already using Public Alpha, install compatible updates over the current app to keep its local data.
 
-- [Current ring-rules example](current-alpha/README.md) shows how the game creates an initial ring and calculates the cost of using a pair to create a box.
-- The backend, Android and Solana code folders contain selected code from an earlier hackathon stage. They do not build the current app.
-- The [Whitepaper](docs/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf) describes today's test version. The [hackathon history](docs/HACKATHON.md) separates earlier work from work done during the event.
+## A quick note about the blockchain
 
-See the [published-code guide](PUBLIC_MIRROR_MANIFEST.md) for the exact scope. The sample has [simple local test instructions](current-alpha/README.md); there is no command here to start the full game. EtheRings is built by Alexey.
+You don't need to understand blockchain technology to start playing.
+
+In the current Alpha, **Cooper Rings** are items in your game account. **Silver Rings and sealed Silver Boxes** are NFTs held in your own wallet on **Solana Devnet**. **ERT** is an in-game resource, while **ERU** is a Devnet test token used in selected game actions. Marketplace transactions use Devnet SOL.
+
+**This is a test, not a Mainnet release.** Devnet assets and balances have no real monetary value. The economy and gameplay may change during testing, and Alpha assets or progress are not guaranteed to carry over to Mainnet.
+
+## Help shape EtheRings
+
+We're looking for real player feedback, not just a list of completed downloads. Tell us what feels fun, what feels confusing, what breaks, and what you'd like to do more of.
+
+Join the [EtheRings Discord](https://discord.gg/5jQzegWuhz) for testing updates and bug reports. If you report a wallet-related issue, share only your **public wallet address** — never a seed phrase or private key.
+
+**In Rings We Trust.**
+
+## Explore the project
+
+Want to dig deeper? The [Public Alpha Whitepaper](docs/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf) explains the current game rules, costs, and limits. It describes the Alpha as of **6 October 2026**; some details may have changed in subsequent app updates.
+
+For technical readers and hackathon judges:
+
+- [Current Alpha game-rules sample](current-alpha/README.md)
+- [Architecture overview](docs/ARCHITECTURE.md) and [security overview](docs/SECURITY_MODEL.md)
+- [Hackathon history and disclosure](docs/HACKATHON.md)
+- [Published-code guide](PUBLIC_MIRROR_MANIFEST.md)
+
+**About the code:** This is a curated public repository, **not the complete source code** of the current Android app. The `current-alpha` directory contains a small sample of current Cooper rules; other code directories represent an earlier hackathon stage and do not build the live game.
+
+EtheRings is built by Alexey. Follow development and Alpha updates on [X](https://x.com/etherings2earn).
 
 ## License
 
