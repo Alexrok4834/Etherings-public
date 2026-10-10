@@ -4,9 +4,9 @@
 
 Public Alpha is live as an Android test on Solana Devnet. It includes verified
 email registration, an embedded self-custodial wallet, step tracking and ERT,
-Draw, Cooper and Silver Ring progression, Cooper breeding, Silver Box opening,
-direct Silver transfers and a fixed-price SOL Marketplace for eligible Silver
-assets. The earlier MVP is retired. The disclosure below records what existed
+Draw, progression of Cooper game items and Silver Ring NFTs, Cooper breeding,
+Silver Box NFT opening, direct NFT transfers and a fixed-price SOL Marketplace
+for eligible NFTs. The earlier MVP is retired. The disclosure below records what existed
 at the competition snapshot; it is not the current feature list.
 
 ## Historical submission snapshot — September 20, 2026
@@ -56,7 +56,7 @@ Accepted within their documented test boundaries:
 - replay isolation and guarded program/config initialization;
 - backend durable operation lifecycle and reconciliation;
 - UNKNOWN handling for ambiguous RPC outcomes;
-- first-entry Silver Box on Devnet;
+- first-entry Silver Box NFT on Devnet;
 - Squads V4 2-of-3 governance over Silver upgrade/config authority;
 - Silver collection initialization;
 - schema-3 Silver transfer state and ExtraAccountMetaList;
@@ -65,7 +65,7 @@ Accepted within their documented test boundaries:
 
 ## Work status at the historical submission
 
-The current Silver work area is Box reveal → Silver Ring issuance.
+The current Silver work area is Box NFT reveal → Silver Ring NFT issuance.
 
 A local reveal/no-reroll foundation is proven, but no production or Mainnet randomness claim is made. Exact oracle/deployment provenance and on-chain reveal transition remain separate acceptance gates.
 

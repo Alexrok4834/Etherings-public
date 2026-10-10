@@ -10,11 +10,11 @@ EtheRings is an Android game where walking helps you collect and improve rings. 
 
 ## How the game works
 
-The current test has two kinds of rings: basic **Cooper** rings and collectible **Silver** rings kept in your wallet.
+The current test has **Cooper** rings, which are game items, and **Silver Ring NFTs**, which belong to your wallet. A sealed **Silver Box NFT** can be opened to receive a ring NFT.
 
 1. Walk with your phone. Steps accepted by the game earn **ERT**, a resource used to play.
 2. Collect rings, improve them and try your luck in Draw.
-3. Use a pair of eligible basic rings to receive a sealed box. Open it to reveal a collectible ring. Boxes can also come from other game rewards.
+3. Use a pair of eligible game rings to receive a sealed box NFT. Open it to reveal a ring NFT. Boxes can also come from other game rewards.
 4. Keep wallet items, send eligible ones to another player or offer them for a fixed price in the Marketplace. A direct transfer starts a 48-hour game cooldown.
 
 Some actions also use **ERU**, a test token. The [Whitepaper](docs/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf) explains the rules and costs in detail.
@@ -31,7 +31,7 @@ Today you can track activity, use Draw, improve rings, breed eligible pairs, ope
 
 ## Why Solana?
 
-The game records frequent activity, such as steps, in its own system. Solana records ownership of collectible wallet items. The player reviews and approves actions involving those items. The [architecture overview](docs/ARCHITECTURE.md) explains the design; the [security overview](docs/SECURITY_MODEL.md) explains how wallet actions are protected.
+The game records frequent activity, such as steps, in its own system. Solana records ownership of the NFTs. The player reviews and approves actions involving those items. The [architecture overview](docs/ARCHITECTURE.md) explains the design; the [security overview](docs/SECURITY_MODEL.md) explains how wallet actions are protected.
 
 ## What's in this repository?
 

@@ -8,19 +8,20 @@ Public Alpha is live as an Android test version on **Solana Devnet**. The earlie
 
 **Move. Play. Collect.** Players register with a verified email, create or restore an embedded self-custodial wallet, and collect Rings. Automatic step tracking produces the off-chain game resource ERT and an activity history. Draw and Ring progression put game resources to use.
 
-The current collection includes Cooper Rings and Solana Devnet Silver Boxes and Silver Rings. Players can level up Cooper and Silver Rings and allocate Points. Breeding two eligible Cooper Rings creates a Silver Box; opening an eligible Box produces a Silver Ring. Eligible Silver Rings and sealed Boxes can be offered through the fixed-price SOL Marketplace. Direct Silver transfers have a 48-hour gameplay cooldown.
+The current collection includes Cooper Rings as game items and Silver Box/Ring NFTs on Solana Devnet. Players can level up Cooper and Silver Rings and allocate Points. Breeding two eligible Cooper Rings creates a Silver Box NFT; opening an eligible Box produces a Silver Ring NFT. Eligible Ring NFTs and sealed Box NFTs can be offered through the fixed-price SOL Marketplace. Direct NFT transfers have a 48-hour gameplay cooldown.
 
 ## Where game state lives
 
 | Game area | Public Alpha approach |
 | --- | --- |
 | Steps, ERT and frequent game actions | Handled by the game backend. ERT is an off-chain game resource. |
-| Cooper Rings | Game collection and progression without an NFT. |
-| ERU and Silver assets | Solana Devnet test assets with on-chain ownership and applicable game rules. |
+| Cooper Rings | Game items and progression, not NFTs. |
+| ERU | A Solana Devnet test token. |
+| Silver Boxes and Rings | Solana Devnet NFTs with player ownership and applicable game rules. |
 | Wallet actions | The player reviews and signs approved Solana actions locally in the Android wallet. |
 | Completed blockchain actions | The game verifies finalized results before showing their outcome. |
 
-This split keeps step counting and frequent gameplay responsive while giving players ownership of the current Silver and ERU layer. Players use Devnet test SOL for blockchain network fees. Recovery phrase control remains with the player; the game backend does not need it.
+This split keeps step counting and frequent gameplay responsive while giving players ownership of NFT items and control of ERU tokens. Players use Devnet test SOL for blockchain network fees. Recovery phrase control remains with the player; the game backend does not need it.
 
 ## Scope and history
 

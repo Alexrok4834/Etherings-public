@@ -8,7 +8,7 @@ This is an architectural summary, not a penetration-test report or production-se
 - The backend does not receive a mnemonic, seed or private key.
 - Wallet creation/restore and signing use the pinned Trust Wallet Core integration.
 - Value-changing transactions require explicit local review/signing.
-- Account login alone does not authorize arbitrary asset movement.
+- Account login alone does not authorize movement of a player's NFT or tokens.
 
 ## On-chain enforcement
 
