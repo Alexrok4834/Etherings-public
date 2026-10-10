@@ -81,7 +81,7 @@ The repository now includes the Android app from the earlier MVP through the cur
 
 Real service passwords, wallet keys, private RPC addresses, deployment settings and player data are not part of the published source. You can build the app with your own local signing key; that build cannot have the signature of the APK we distribute. The [source guide](PUBLIC_MIRROR_MANIFEST.md) describes the boundary precisely.
 
-EtheRings is built by Alexey. Contact: [founder@etherings.com](mailto:founder@etherings.com). Follow development and Alpha updates on [X](https://x.com/etherings2earn).
+EtheRings is built by Alex Kopytov. Contact: [founder@etherings.com](mailto:founder@etherings.com). Follow development and Alpha updates on [X](https://x.com/etherings2earn).
 
 ## License
 
