@@ -1,0 +1,16 @@
+{
+  "cluster": "devnet",
+  "authority": "2FxK6uAFufk4hdL2Yz5zBHvb653RS7VeBJSd1P6PtEHc",
+  "source": "AYiSyWmb8MFcDLgPfoQhFXw7L2H4xUFMckHwetWnsXbw",
+  "destination": "EdXT16XWGS5vf1X2ezwaL5TB6ZLb5XqsMxBF439FmHmi",
+  "treasury": "6MrxKmPBSC8edNv7WfPb1JekAv9pDhEVs1uQt6H9uCn6",
+  "config": "97amFjWUMqwMFY5PVgcWYaTnQQaD4NTayFXvP3ipGDRW",
+  "replay": "FLNBSetSvoD7CfJEvpMqK8ZQpEWA1HJbk8vF5mSnQmcJ",
+  "mint": "7zSM3kBiPCVJCmvYYK8quXeydLTWtMNQDwPm3weQTHNe",
+  "meta": "2fGDWLUxokVrv6hWWJYH9kYfhrFfrn7GKqpEEAfByKtr",
+  "sysvar": "Sysvar1nstructions1111111111111111111111111",
+  "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+  "hook": "4HrsQyjt5StEJkhcqeWTLHvYCtDWVrBoeqEcnK5f8pHi",
+  "systemProgram": "11111111111111111111111111111111",
+  "gateway": "81A7VsEBQpKgAagZrHnjE2ntK12poaiVth4i3wQ5thi2"
+}

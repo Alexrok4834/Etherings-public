@@ -1,0 +1,28 @@
+<resources>
+    <color name="brand_black">#171717</color>
+    <color name="brand_gold">#F2C176</color>
+    <color name="brand_background">@color/brand_black</color>
+    <color name="brand_surface">#181713</color>
+    <color name="brand_surface_elevated">#23211E</color>
+    <color name="brand_accent">@color/brand_gold</color>
+    <color name="brand_accent_bright">#ECC17A</color>
+    <color name="brand_outline">#5B4A35</color>
+    <color name="brand_text_primary">#F5F4F1</color>
+    <color name="brand_text_secondary">#C4BBAF</color>
+    <color name="brand_text_subtle">#9A9186</color>
+    <color name="brand_on_accent">@color/brand_black</color>
+    <color name="brand_disabled_surface">#2B2926</color>
+    <color name="brand_disabled_text">#8F887F</color>
+    <color name="brand_error">#FF8A80</color>
+    <color name="brand_success">#91D6A8</color>
+    <color name="raffle_ert_1">#F2C176</color>
+    <color name="raffle_ert_2">#DDAA59</color>
+    <color name="raffle_ert_3">#C89043</color>
+    <color name="raffle_ert_4">#A97534</color>
+    <color name="raffle_eru_1">#80BEB1</color>
+    <color name="raffle_eru_2">#5EA198</color>
+    <color name="raffle_eru_3">#3E817D</color>
+    <color name="raffle_eru_4">#286663</color>
+    <color name="raffle_copper">#B86F45</color>
+    <color name="raffle_unknown">#625B52</color>
+</resources>

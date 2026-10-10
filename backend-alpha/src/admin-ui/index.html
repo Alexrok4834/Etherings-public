@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>EtheRings Alpha Admin</title>
+  <link rel="stylesheet" href="/admin/admin.css">
+  <script src="/admin/admin.js" defer></script>
+</head>
+<body>
+  <header><strong>EtheRings</strong><span>Public Alpha · Admin</span><button id="logout" hidden>Sign out</button></header>
+  <main>
+    <section id="login" class="card narrow">
+      <h1>Sign in</h1>
+      <p>Use your existing verified Alpha administrator account.</p>
+      <form id="login-form">
+        <label>Email<input id="email" type="email" autocomplete="username" required></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+        <button type="submit">Sign in</button>
+      </form>
+    </section>
+    <div id="workspace" hidden>
+      <nav aria-label="Admin sections">
+        <button data-panel="overview" class="selected">Overview</button>
+        <button data-panel="users">Users</button>
+        <button data-panel="draw">Draw</button>
+        <button data-panel="grants">Grants</button>
+      </nav>
+      <section id="overview" class="panel card">
+        <h1>Alpha overview</h1>
+        <button id="refresh-overview">Refresh</button>
+        <div id="overview-grid" class="grid"></div>
+        <h2>Operations and reserve</h2>
+        <pre id="operations"></pre>
+      </section>
+      <section id="users" class="panel card" hidden>
+        <h1>Users</h1>
+        <form id="user-search-form" class="row">
+          <input id="user-search" type="search" placeholder="Search by email" aria-label="Search by email">
+          <button type="submit">Search</button>
+          <button id="refresh-users" type="button">Refresh</button>
+        </form>
+        <p id="user-status" role="status" aria-live="polite"></p>
+        <div id="user-results"></div>
+        <div id="user-detail"></div>
+      </section>
+      <section id="draw" class="panel card" hidden>
+        <h1>Draw</h1>
+        <h2>Results</h2>
+        <p>Selected prizes from completed spins. ERU and Silver Box delivery may finish later.</p>
+        <div id="draw-statistics" class="grid"></div>
+        <h2>Configurations</h2>
+        <p>Changes create a new version. Completed draws retain their original rules.</p>
+        <div id="draw-configurations"></div>
+        <h2>New configuration</h2>
+        <form id="draw-form">
+          <label>Daily attempt limit<input id="draw-limit" type="number" min="1" max="32767" value="5" required></label>
+          <div class="grid">
+            <label>10 ERT weight<input id="draw-ert" type="number" min="1" value="90" required></label>
+            <label>5 ERU weight<input id="draw-eru" type="number" min="1" value="6" required></label>
+            <label>Cooper Ring weight<input id="draw-cooper" type="number" min="1" value="3" required></label>
+            <label>Silver Box weight<input id="draw-box" type="number" min="1" value="1" required></label>
+          </div>
+          <button type="submit">Save draft</button>
+        </form>
+      </section>
+      <section id="grants" class="panel card" hidden>
+        <h1>Grant values</h1>
+        <p>Each grant is recorded with its recipient and reason.</p>
+        <h2>ERT to Alpha account</h2>
+        <form id="ert-form">
+          <label>Account ID<input id="ert-account" required readonly></label>
+          <label>ERT amount<input id="ert-amount" inputmode="decimal" required></label>
+          <label>Reason<input id="ert-reason" maxlength="512" required></label>
+          <button type="submit">Credit ERT</button>
+        </form>
+        <div id="cooper-controls" hidden>
+          <h2>Cooper Ring to Alpha account</h2>
+          <form id="cooper-form">
+            <label>Account ID<input id="cooper-account" required readonly></label>
+            <label>Reason<input id="cooper-reason" maxlength="512" required></label>
+            <button type="submit">Grant Cooper Ring</button>
+          </form>
+        </div>
+        <div id="box-controls">
+          <h2>Silver Box to Alpha account</h2>
+          <p>The Box is issued on Solana Devnet and appears after blockchain confirmation.</p>
+          <form id="box-form">
+            <label>Account ID<input id="box-account" required readonly></label>
+            <label>Reason<input id="box-reason" maxlength="512" required></label>
+            <button type="submit">Grant Silver Box</button>
+          </form>
+          <h2>Recent Box grants</h2>
+          <button id="refresh-boxes">Refresh Box grants</button>
+          <div id="box-grants"></div>
+        </div>
+        <h2>ERU to Devnet wallet</h2>
+        <p>Maximum 50 ERU per transfer. The result is shown after blockchain confirmation.</p>
+        <p id="eru-budget"></p>
+        <form id="eru-form">
+          <label>Wallet address<input id="eru-wallet" spellcheck="false" required></label>
+          <label>ERU amount<input id="eru-amount" inputmode="decimal" required></label>
+          <label>Reason<input id="eru-reason" maxlength="512" required></label>
+          <button type="submit">Send ERU</button>
+        </form>
+        <h2>Recent ERU transfers</h2>
+        <button id="refresh-eru">Refresh transfers</button>
+        <div id="eru-transfers"></div>
+      </section>
+    </div>
+    <p id="notice" role="status" aria-live="polite"></p>
+  </main>
+</body>
+</html>

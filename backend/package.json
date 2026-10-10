@@ -1,21 +1,74 @@
 {
-  "name": "etherings-alpha-auth",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "node --check src/auth.js && node --check src/server.js && node --check src/mail.js && node --check src/wallet.js && node --check src/eru.js && node --check src/hybrid-ert.js && node --check src/silver-first-entry.js && node --check src/silver-chain.js && node --check src/main.js",
-    "test": "node --test test/*.test.js"
-  },
-  "engines": {
-    "node": ">=24"
-  },
-  "dependencies": {
-    "@solana/kit": "8.3.0",
-    "@solana-program/compute-budget": "0.18.1",
-    "@solana-program/token-2022": "0.18.0",
-    "bs58": "4.0.1",
-    "pg": "8.16.3",
-    "resend": "6.28.1"
-  }
+    "name":  "etherings-mvp-backend",
+    "version":  "0.1.0",
+    "private":  true,
+    "scripts":  {
+                    "build":  "tsc -p tsconfig.build.json",
+                    "start":  "node dist/main.js",
+                    "start:dev":  "tsx watch src/main.ts",
+                    "test":  "node --test --import tsx \"src/**/*.spec.ts\"",
+                    "typecheck":  "tsc -p tsconfig.json --noEmit",
+                    "admin:promote":  "tsx scripts/promote-admin.ts",
+                    "demo:seed":  "tsx scripts/seed-demo.ts",
+                    "migration:run":  "node ./node_modules/typeorm/cli.js migration:run -d dist/database/data-source.js",
+                    "migration:revert":  "node ./node_modules/typeorm/cli.js migration:revert -d dist/database/data-source.js",
+                    "migration:show":  "node ./node_modules/typeorm/cli.js migration:show -d dist/database/data-source.js",
+                    "qa:step-sync-concurrency":  "tsx scripts/verify-step-sync-concurrency.ts",
+                    "qa:balance-f03-concurrency":  "tsx scripts/verify-balance-f03-concurrency.ts",
+                    "qa:auth-f04-http":  "tsx scripts/verify-auth-f04-http.ts",
+                    "qa:step-outbox-f05-f06":  "tsx scripts/verify-step-outbox-f05-f06-http.ts",
+                    "qa:mobile-refresh":  "tsx scripts/verify-mobile-refresh-tokens.ts",
+                    "qa:prepare-legacy-schema":  "tsx scripts/prepare-disposable-legacy-schema.ts",
+                    "qa:mobile-credentials":  "tsx scripts/verify-mobile-credentials.ts",
+                    "qa:copper-schema":  "tsx scripts/verify-copper-ring-schema.ts",
+                    "qa:copper-entitlement":  "tsx scripts/verify-copper-entitlement.ts",
+                    "qa:copper-access":  "npm run build && tsx scripts/verify-copper-access.ts",
+                    "qa:copper-level-up":  "tsx scripts/verify-copper-level-up.ts",
+                    "qa:raffle-decimal":  "tsx scripts/verify-raffle-decimal.ts",
+                    "qa:admin-decimal":  "tsx scripts/verify-admin-decimal.ts",
+                    "qa:copper-deferred-schema":  "tsx scripts/verify-copper-deferred-allocation-schema.ts",
+                    "qa:copper-attribute-allocation":  "tsx scripts/verify-copper-attribute-allocation.ts",
+                    "qa:copper-bulk-allocation-schema":  "tsx scripts/verify-copper-deferred-allocation-schema.ts",
+                    "qa:m2e-accounting-schema":  "tsx scripts/verify-m2e-accounting-schema.ts",
+                    "qa:fresh-migration-chain":  "tsx scripts/verify-fresh-migration-chain.ts",
+                    "qa:m2e-production-clone":  "tsx scripts/verify-m2e-production-clone.ts",
+                    "qa:eru-accounting-schema":  "tsx scripts/verify-eru-accounting-schema.ts",
+                    "qa:eru-ledger":  "tsx scripts/verify-eru-ledger.ts",
+                    "qa:eru-decimal-reconciliation":  "tsx scripts/verify-eru-decimal-reconciliation.ts",
+                    "qa:eru-raffle":  "tsx scripts/verify-eru-raffle.ts",
+                    "qa:raffle-v2-schema":  "tsx scripts/verify-raffle-v2-singleton-schema.ts",
+                    "qa:raffle-v2-draw-core":  "tsx scripts/verify-raffle-v2-draw-core.ts",
+                    "qa:raffle-v2-api":  "npm run build && tsx scripts/verify-raffle-v2-api.ts",
+                    "qa:raffle-retired-writes":  "npm run build && tsx scripts/verify-raffle-retired-writes.ts",
+                    "qa:raffle-v2-idempotency-api":  "npm run build && tsx scripts/verify-raffle-v2-idempotency-api.ts",
+                    "qa:raffle-v2-consolidation":  "npm run build && tsx scripts/verify-raffle-v2-consolidation.ts",
+                    "qa:raffle-v2-production-restore":  "tsx scripts/verify-raffle-v2-production-restore.ts",
+                    "qa:raffle-v2-release-restored-copy":  "npm run build && tsx scripts/verify-raffle-v2-release-restored-copy.ts",
+                    "qa:raffle-v2-production-rehearsal":  "npm run build && tsx scripts/rehearse-raffle-v2-production-restore.ts",
+                    "qa:raffle-v2-admin-concurrency":  "tsx scripts/verify-raffle-v2-admin-concurrency.ts",
+                    "qa:raffle-v2-copper":  "npm test && npm run qa:raffle-v2-draw-core && npm run qa:copper-entitlement",
+                    "qa:copper-release":  "npm run qa:copper-schema && npm run qa:copper-entitlement",
+                    "copper:backfill":  "tsx scripts/backfill-copper-rings.ts"
+                },
+    "dependencies":  {
+                         "@nestjs/common":  "^11.2.3",
+                         "@nestjs/config":  "^4.0.4",
+                         "@nestjs/core":  "^11.2.3",
+                         "@nestjs/jwt":  "^11.0.2",
+                         "@nestjs/platform-express":  "^11.2.3",
+                         "@nestjs/typeorm":  "^11.0.3",
+                         "decimal.js":  "^10.6.0",
+                         "pg":  "^8.16.3",
+                         "reflect-metadata":  "^0.2.2",
+                         "rxjs":  "^7.8.2",
+                         "typeorm":  "^0.3.31"
+                     },
+    "devDependencies":  {
+                            "@types/node":  "^24.10.1",
+                            "tsx":  "^4.21.0",
+                            "typescript":  "^5.9.3"
+                        },
+    "overrides":  {
+                      "brace-expansion":  "2.1.4"
+                  }
 }

@@ -1,0 +1,14 @@
+.gradle/
+build/
+*/build/
+local.properties
+*.iml
+.idea/
+.cxx/
+.externalNativeBuild/
+*.jks
+*.keystore
+*.p12
+*.pfx
+key.properties
+.gradle-proxy-cache/

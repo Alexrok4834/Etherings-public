@@ -6,6 +6,10 @@
 *.jks
 *.keystore
 node_modules/
+android-alpha-prototype/.gradle/
+android-alpha-prototype/**/build/
+backend-alpha/node_modules/
+frontend/node_modules/
 .gradle/
 build/
 dist/

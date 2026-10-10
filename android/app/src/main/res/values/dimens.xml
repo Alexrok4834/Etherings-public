@@ -1,0 +1,30 @@
+<resources>
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_sm">8dp</dimen>
+    <dimen name="space_md">12dp</dimen>
+    <dimen name="space_lg">16dp</dimen>
+    <dimen name="space_xl">20dp</dimen>
+
+    <dimen name="border_hairline">1dp</dimen>
+    <dimen name="border_standard">2dp</dimen>
+    <dimen name="radius_control">8dp</dimen>
+    <dimen name="radius_panel">8dp</dimen>
+    <dimen name="radius_profile_entry">24dp</dimen>
+
+    <dimen name="touch_target">48dp</dimen>
+    <dimen name="attribute_plus_frame_size">24dp</dimen>
+    <dimen name="attribute_action_slot_width">36dp</dimen>
+    <dimen name="ring_detail_row_height">28dp</dimen>
+    <dimen name="ring_detail_row_gap">2dp</dimen>
+    <dimen name="ring_detail_table_inset">8dp</dimen>
+    <dimen name="profile_entry_size">48dp</dimen>
+    <dimen name="brand_logo_size">56dp</dimen>
+    <dimen name="header_token_icon_size">20dp</dimen>
+    <dimen name="raffle_reward_artwork_size">280dp</dimen>
+
+    <dimen name="text_caption">11sp</dimen>
+    <dimen name="text_label">12sp</dimen>
+    <dimen name="text_body">14sp</dimen>
+    <dimen name="text_card_title">15sp</dimen>
+    <dimen name="text_title">20sp</dimen>
+</resources>

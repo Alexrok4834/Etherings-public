@@ -14,3 +14,7 @@
 12. Public publication does not imply production deployment, Mainnet approval or release.
 13. Website source remains outside this repository unless separately approved.
 14. If a source file becomes unsafe for publication, remove it from the allowlist rather than weakening the private engineering boundary.
+
+## Release updates
+
+For each public app release, update `CHANGELOG.md` and `docs/RELEASE_HISTORY.md` in plain language, reconcile open and fixed tester reports in `docs/KNOWN_ISSUES.md`, and check that `README.md` and the build guide still describe the shipped source. Record an unpublished device build as such; do not call it a public release. Export changed source from a reviewed private revision after checking secrets, private addresses, player data and third-party licenses. Test the build that the public source can produce before pushing. Keep GitHub release tags tied to the code actually present at their commit; never backdate or rewrite Git history to simulate earlier development.

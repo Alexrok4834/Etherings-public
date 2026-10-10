@@ -1,0 +1,12 @@
+[package]
+name = "orao-classic-cpi-client"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+anchor-client = { version = "=0.32.1", features = ["async"] }
+orao-solana-vrf = "=0.7.0"
+orao-classic-cpi-proof = { path = "../program", features = ["no-entrypoint"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+hex = "0.4"

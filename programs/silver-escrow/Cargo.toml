@@ -1,0 +1,18 @@
+[package]
+name = "silver-escrow-proof"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+no-entrypoint = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build", "orao-solana-vrf/idl-build"]
+
+[dependencies]
+anchor-lang = "=0.32.1"
+anchor-spl = { version = "=0.32.1", features = ["token_2022", "associated_token"] }
+orao-solana-vrf = { version = "=0.7.0", default-features = false, features = ["cpi"] }
+spl-transfer-hook-interface = "=0.10.0"

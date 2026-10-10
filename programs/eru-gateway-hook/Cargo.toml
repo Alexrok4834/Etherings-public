@@ -1,0 +1,8 @@
+[workspace]
+members = ["gateway", "hook", "reward-distributor"]
+resolver = "2"
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1

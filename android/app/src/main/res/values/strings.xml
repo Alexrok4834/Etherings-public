@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">EtheRings</string>
+    <string name="brand_logo_content_description">EtheRings logo</string>
+    <string name="ert_token_content_description">ERT token</string>
+    <string name="eru_token_content_description">ERU token</string>
+    <string name="profile_entry_content_description">Open profile</string>
+    <string name="change_name">Change name</string>
+    <string name="change_password">Change password</string>
+    <string name="sign_out">Sign out</string>
+    <string name="profile_version">MVP v. 1.%1$s</string>
+    <string name="saving">Saving...</string>
+    <string name="changing_password">Changing password...</string>
+    <string name="signing_out">Signing out...</string>
+    <string name="create_account">Create account</string>
+    <string name="creating_account">Creating account...</string>
+    <string name="back_to_sign_in">Back to sign in</string>
+    <string name="activity_history">Activity</string>
+    <string name="raffle_wheel_content_description">Raffle wheel</string>
+    <string name="raffle_wheel_waiting_content_description">Raffle draw in progress</string>
+    <string name="raffle_wheel_ready_content_description">Raffle wheel with current reward chances</string>
+    <string name="raffle_wheel_result_content_description">Raffle result: %1$s</string>
+    <string name="raffle_reward_fallback">Reward %1$d</string>
+    <string name="raffle_v2_acceptance_pending">Draw will be enabled after device acceptance</string>
+    <string name="raffle_v2_retry_same">Retry the same Draw</string>
+    <string name="raffle_v2_result">Won: %1$s</string>
+    <string name="raffle_v2_continue">Continue</string>
+    <string name="raffle_reward_ack_content_description">Won %1$s. Tap reward to continue</string>
+    <string name="raffle_reward_ack_failed">Could not save acknowledgement. Tap the reward to retry.</string>
+</resources>

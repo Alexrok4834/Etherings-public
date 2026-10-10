@@ -1,0 +1,31 @@
+{
+  "name": "@etherings/alpha-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./cooper-breeding-price.d.ts",
+      "default": "./cooper-breeding-price.js"
+    },
+    "./auth": {
+      "types": "./auth.d.ts",
+      "default": "./auth.js"
+    },
+    "./starter-cooper": {
+      "types": "./starter-cooper.d.ts",
+      "default": "./starter-cooper.js"
+    },
+    "./cooper-generation": {
+      "types": "./cooper-generation.d.ts",
+      "default": "./cooper-generation.js"
+    },
+    "./verification-email": {
+      "types": "./verification-email.d.ts",
+      "default": "./verification-email.js"
+    }
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

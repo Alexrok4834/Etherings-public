@@ -1,0 +1,342 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "d4f20beeeecf441d22b9ab683b723ae8",
+    "entities": [
+      {
+        "tableName": "sync_installation",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `installation_id` TEXT NOT NULL, `next_sequence` INTEGER NOT NULL, `created_at_ms` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "installationId",
+            "columnName": "installation_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextSequence",
+            "columnName": "next_sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtMs",
+            "columnName": "created_at_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_sync_installation_installation_id",
+            "unique": true,
+            "columnNames": [
+              "installation_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_sync_installation_installation_id` ON `${TABLE_NAME}` (`installation_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "step_accumulator",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`owner_id` TEXT NOT NULL, `total_steps` INTEGER NOT NULL, `daily_steps` INTEGER NOT NULL, `reward_window_steps` INTEGER NOT NULL, `last_raw_counter` INTEGER NOT NULL, `raw_counter_initialized` INTEGER NOT NULL, `daily_date` TEXT NOT NULL, `reward_window_started_at_ms` INTEGER NOT NULL, `sensor_event_count` INTEGER NOT NULL, `last_sensor_update_at_ms` INTEGER NOT NULL, `updated_at_ms` INTEGER NOT NULL, PRIMARY KEY(`owner_id`))",
+        "fields": [
+          {
+            "fieldPath": "ownerId",
+            "columnName": "owner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalSteps",
+            "columnName": "total_steps",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dailySteps",
+            "columnName": "daily_steps",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rewardWindowSteps",
+            "columnName": "reward_window_steps",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastRawCounter",
+            "columnName": "last_raw_counter",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rawCounterInitialized",
+            "columnName": "raw_counter_initialized",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dailyDate",
+            "columnName": "daily_date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rewardWindowStartedAtMs",
+            "columnName": "reward_window_started_at_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sensorEventCount",
+            "columnName": "sensor_event_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSensorUpdateAtMs",
+            "columnName": "last_sensor_update_at_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtMs",
+            "columnName": "updated_at_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "owner_id"
+          ]
+        }
+      },
+      {
+        "tableName": "step_outbox_batch",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`batch_id` TEXT NOT NULL, `owner_id` TEXT NOT NULL, `installation_id` TEXT NOT NULL, `sequence` INTEGER NOT NULL, `local_date` TEXT NOT NULL, `timezone_offset_minutes` INTEGER NOT NULL, `observed_started_at_ms` INTEGER NOT NULL, `observed_ended_at_ms` INTEGER NOT NULL, `step_delta` INTEGER NOT NULL, `sensor_event_count` INTEGER NOT NULL, `source` TEXT NOT NULL, `algorithm_version` TEXT NOT NULL, `state` TEXT NOT NULL, `attempt_count` INTEGER NOT NULL, `last_attempt_at_ms` INTEGER, `result_code` TEXT, `accepted_step_delta` INTEGER, `earned_ert_delta` INTEGER, `created_at_ms` INTEGER NOT NULL, `updated_at_ms` INTEGER NOT NULL, PRIMARY KEY(`batch_id`), FOREIGN KEY(`installation_id`) REFERENCES `sync_installation`(`installation_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "batchId",
+            "columnName": "batch_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownerId",
+            "columnName": "owner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "installationId",
+            "columnName": "installation_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sequence",
+            "columnName": "sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localDate",
+            "columnName": "local_date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timezoneOffsetMinutes",
+            "columnName": "timezone_offset_minutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observedStartedAtMs",
+            "columnName": "observed_started_at_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observedEndedAtMs",
+            "columnName": "observed_ended_at_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stepDelta",
+            "columnName": "step_delta",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sensorEventCount",
+            "columnName": "sensor_event_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "algorithmVersion",
+            "columnName": "algorithm_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "attemptCount",
+            "columnName": "attempt_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastAttemptAtMs",
+            "columnName": "last_attempt_at_ms",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "resultCode",
+            "columnName": "result_code",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "acceptedStepDelta",
+            "columnName": "accepted_step_delta",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "earnedErtDelta",
+            "columnName": "earned_ert_delta",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "createdAtMs",
+            "columnName": "created_at_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtMs",
+            "columnName": "updated_at_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "batch_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_step_outbox_batch_installation_id_sequence",
+            "unique": true,
+            "columnNames": [
+              "installation_id",
+              "sequence"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_step_outbox_batch_installation_id_sequence` ON `${TABLE_NAME}` (`installation_id`, `sequence`)"
+          },
+          {
+            "name": "index_step_outbox_batch_owner_id_state_sequence",
+            "unique": false,
+            "columnNames": [
+              "owner_id",
+              "state",
+              "sequence"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_step_outbox_batch_owner_id_state_sequence` ON `${TABLE_NAME}` (`owner_id`, `state`, `sequence`)"
+          },
+          {
+            "name": "index_step_outbox_batch_owner_id_local_date",
+            "unique": false,
+            "columnNames": [
+              "owner_id",
+              "local_date"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_step_outbox_batch_owner_id_local_date` ON `${TABLE_NAME}` (`owner_id`, `local_date`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "sync_installation",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "installation_id"
+            ],
+            "referencedColumns": [
+              "installation_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "local_migration_marker",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `source_schema_version` INTEGER NOT NULL, `completed_at_ms` INTEGER NOT NULL, PRIMARY KEY(`name`))",
+        "fields": [
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceSchemaVersion",
+            "columnName": "source_schema_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedAtMs",
+            "columnName": "completed_at_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "name"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd4f20beeeecf441d22b9ab683b723ae8')"
+    ]
+  }
+}

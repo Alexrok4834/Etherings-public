@@ -1,0 +1,16 @@
+[package]
+name = "orao-classic-cpi-proof"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+no-entrypoint = []
+idl-build = ["anchor-lang/idl-build", "orao-solana-vrf/idl-build"]
+
+[dependencies]
+anchor-lang = "=0.32.1"
+orao-solana-vrf = { version = "=0.7.0", default-features = false, features = ["cpi"] }

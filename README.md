@@ -58,14 +58,30 @@ Want to dig deeper? The [Public Alpha Whitepaper](docs/EtheRings_Public_Alpha_Wh
 
 For technical readers and hackathon judges:
 
-- [Current Alpha game-rules sample](current-alpha/README.md)
+- [Build the Android app](docs/BUILD.md)
+- [Development and release history](docs/RELEASE_HISTORY.md)
+- [Changes in each version](CHANGELOG.md)
+- [Known issues](docs/KNOWN_ISSUES.md)
 - [Architecture overview](docs/ARCHITECTURE.md) and [security overview](docs/SECURITY_MODEL.md)
 - [Hackathon history and disclosure](docs/HACKATHON.md)
-- [Published-code guide](PUBLIC_MIRROR_MANIFEST.md)
+- [What is included in the source](PUBLIC_MIRROR_MANIFEST.md)
 
-**About the code:** This repository does **not** contain everything needed to build the current Android app, game server, or Solana programs. The `current-alpha` directory contains two small rule modules and tests adapted from the current server source. The `backend`, `android`, and `programs` directories contain selected files from the September 2026 hackathon stage; they are not the complete implementation now in use. GitHub's automatic release source archives contain this public repository, not the full source of the downloadable app.
+## Code you can explore
 
-EtheRings is built by Alexey. Follow development and Alpha updates on [X](https://x.com/etherings2earn).
+The repository now includes the Android app from the earlier MVP through the current Public Alpha, the MVP and Alpha game servers, the web client, the Solana programs, and their relevant tests. The folders follow the shape of the [hackathon example](https://github.com/Marakaya/colosseum_example): open a part of the product, read its code, then use the [build guide](docs/BUILD.md) to try it yourself.
+
+| Folder | What you will find |
+| --- | --- |
+| [`android/`](android/) | The player app. Its MVP and Alpha screens live in the same Android project. |
+| [`backend/`](backend/) | The earlier MVP game server and shared Alpha rules. |
+| [`backend-alpha/`](backend-alpha/) | The current Alpha game server, database changes and tests. |
+| [`frontend/`](frontend/) | The MVP web and administration client. |
+| [`programs/`](programs/) | Solana program source and development projects. |
+| [`android-alpha-prototype/`](android-alpha-prototype/) | The separate Android prototype used during Alpha development. |
+
+Real service passwords, wallet keys, private RPC addresses, deployment settings and player data are not part of the published source. You can build the app with your own local signing key; that build cannot have the signature of the APK we distribute. The [source guide](PUBLIC_MIRROR_MANIFEST.md) describes the boundary precisely.
+
+EtheRings is built by Alexey. Contact: [founder@etherings.com](mailto:founder@etherings.com). Follow development and Alpha updates on [X](https://x.com/etherings2earn).
 
 ## License
 

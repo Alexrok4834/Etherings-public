@@ -1,0 +1,23 @@
+{
+  "name": "etherings-alpha-auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node --check src/json-rpc.js && node --check src/admin-operational-stats.js && node --check src/admin-dashboard.js && node --check src/admin-eru-transfer.js && node --check src/auth.js && node --check src/server.js && node --check src/ipfs-media.js && node --check src/mail.js && node --check src/wallet.js && node --check src/wallet-assets.js && node --check src/eru.js && node --check src/eru-history.js && node --check src/eru-canonical-send.js && node --check src/hybrid-ert.js && node --check src/admin-ert-credit.js && node --check src/cooper-generation.js && node --check src/draw-selection.js && node --check src/draw-box-identity.js && node --check src/draw-box-issuer.js && node --check src/draw-eru-chain.js && node --check src/draw-eru-issuer.js && node --check src/draw.js && node --check src/cooper-point-allocation.js && node --check src/cooper-level-up.js && node --check src/cooper-eru-intent.js && node --check src/cooper-eru-candidate-reader.js && node --check src/cooper-eru-issuance.js && node --check src/cooper-eru-attestation.js && node --check src/cooper-eru-finality.js && node --check src/cooper-eru-reconciliation.js && node --check src/cooper-eru-user-flow.js && node --check src/cooper-eru-http.js && node --check src/silver-first-entry.js && node --check src/silver-chain.js && node --check src/silver-opening.js && node --check src/silver-opening-intent.js && node --check src/silver-opening-candidate.js && node --check src/silver-keeper.js && node --check src/silver-keeper-chain.js && node --check src/silver-escrow-provisioner.js && node --check src/silver-keeper-main.js && node --check src/starter-cooper.js && node --check src/ring-equipment.js && node --check src/m2e-ring-inputs.js && node --check src/m2e-comfort-epochs.js && node --check src/m2e-ert-decimal.js && node --check src/m2e-balance-config.js && node --check src/m2e-earning-calculator.js && node --check src/m2e-step-batch.js && node --check src/m2e-daily-accounting.js && node --check src/m2e-step-sync.js && node --check src/m2e-profile.js && node --check src/silver-issuer-chain.js && node --check src/silver-issuer.js && node --check src/silver-progression.js && node --check src/silver-progression-read.js && node --check src/silver-progression-intent.js && node --check src/silver-progression-finality.js && node --check src/silver-progression-flow.js && node --check src/silver-progression-http.js && node --check src/silver-allocation-intent.js && node --check src/silver-allocation.js && node --check src/admin-cooper-grant.js && node --check src/admin-box-identity.js && node --check src/admin-box-grant.js && node --check src/admin-ui/admin.js && node --check src/main.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@etherings/alpha-core": "file:../backend/alpha-core",
+    "@solana/kit": "8.3.0",
+    "@solana-program/compute-budget": "0.18.1",
+    "@solana-program/token-2022": "0.18.0",
+    "bs58": "4.0.1",
+    "decimal.js": "10.6.0",
+    "pg": "8.16.3",
+    "resend": "6.28.1"
+  }
+}
