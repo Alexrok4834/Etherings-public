@@ -13,4 +13,4 @@ The version and release summary in `index.html` describe the published
 1.2.1a Alpha. Later release updates must be checked against the public APK
 and its release metadata before this page is changed.
 
-The current page uses three frames from October 5 Public Alpha recordings and the public EtheRings Alpha demo hosted on YouTube. The screenshots predate 1.2.1a and are dated on the page; the earlier MVP imagery and video are no longer used. A direct YouTube link is provided if the embedded player is unavailable.
+The current page uses three frames from October 5 Public Alpha recordings and the owner-provided Alpha demo as a local video, with a direct YouTube link. The web copy masks a personal email visible in the footage. The screenshots predate 1.2.1a and are dated on the page; the earlier MVP imagery and video are no longer used. The site also links to the project Discord, X, company LinkedIn and founder LinkedIn.
