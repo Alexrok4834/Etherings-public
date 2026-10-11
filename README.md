@@ -7,11 +7,10 @@
 <p align="center">
   <a href="assets/alpha-draw.png"><img src="assets/alpha-draw.png" alt="Draw screen in the EtheRings Public Alpha" width="210" /></a>
   <a href="assets/alpha-home.png"><img src="assets/alpha-home.png" alt="Home screen with step tracking and an equipped Ring" width="210" /></a>
-  <a href="assets/alpha-rings.png"><img src="assets/alpha-rings.png" alt="Rings screen showing the Ring inventory" width="210" /></a>
   <a href="assets/alpha-market.png"><img src="assets/alpha-market.png" alt="Market screen showing Silver Rings and a Silver Box listed for sale" width="210" /></a>
 </p>
 
-<p align="center"><sub>Draw · Home · Rings · Market — captured from Public Alpha 1.2.1a</sub></p>
+<p align="center"><sub>Draw · Home · Market — captured from Public Alpha 1.2.1a</sub></p>
 
 **Move. Play. Collect.**
 
