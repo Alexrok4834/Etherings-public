@@ -13,4 +13,4 @@ The version and release summary in `index.html` describe the published
 1.2.1a Alpha. Later release updates must be checked against the public APK
 and its release metadata before this page is changed.
 
-The current page uses three frames from October 5 Public Alpha recordings and a silent October 4–10 development recap. That recap also includes a separately labeled Beta prototype. The screenshots predate 1.2.1a and are dated on the page; the earlier MVP imagery and video are no longer used.
+The current page uses three frames from October 5 Public Alpha recordings and the public EtheRings Alpha demo hosted on YouTube. The screenshots predate 1.2.1a and are dated on the page; the earlier MVP imagery and video are no longer used. A direct YouTube link is provided if the embedded player is unavailable.
