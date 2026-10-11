@@ -1,6 +1,16 @@
 # EtheRings
 
-![EtheRings logo](assets/etherings-logo-gold.png)
+<p align="center">
+  <img src="assets/etherings-logo-gold.png" alt="EtheRings logo" width="112" />
+</p>
+
+<p align="center">
+  <a href="assets/alpha-draw.jpg"><img src="assets/alpha-draw.jpg" alt="Draw screen in the EtheRings Public Alpha" width="210" /></a>
+  <a href="assets/alpha-home.jpg"><img src="assets/alpha-home.jpg" alt="Home screen with step tracking and an equipped Ring" width="210" /></a>
+  <a href="assets/alpha-rings.jpg"><img src="assets/alpha-rings.jpg" alt="Rings screen showing Ring attributes and progression" width="210" /></a>
+</p>
+
+<p align="center"><sub>Draw · Home · Rings — real Public Alpha footage</sub></p>
 
 **Move. Play. Collect.**
 
