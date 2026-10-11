@@ -68,7 +68,7 @@ For technical readers and hackathon judges:
 
 ## Code you can explore
 
-The repository now includes the Android app from the earlier MVP through the current Public Alpha, the MVP and Alpha game servers, the web client, the Solana programs, and their relevant tests. The folders follow the shape of the [hackathon example](https://github.com/Marakaya/colosseum_example): open a part of the product, read its code, then use the [build guide](docs/BUILD.md) to try it yourself.
+The repository now includes the Android app from the earlier MVP through the current Public Alpha, the MVP and Alpha game servers, the web client, the public website, the Solana programs, and their relevant tests. The folders follow the shape of the [hackathon example](https://github.com/Marakaya/colosseum_example): open a part of the product, read its code, then use the [build guide](docs/BUILD.md) to try it yourself.
 
 | Folder | What you will find |
 | --- | --- |
@@ -76,6 +76,7 @@ The repository now includes the Android app from the earlier MVP through the cur
 | [`backend/`](backend/) | The earlier MVP game server and shared Alpha rules. |
 | [`backend-alpha/`](backend-alpha/) | The current Alpha game server, database changes and tests. |
 | [`frontend/`](frontend/) | The MVP web and administration client. |
+| [`website/`](website/) | The public EtheRings landing page and its media. |
 | [`programs/`](programs/) | Solana program source and development projects. |
 | [`android-alpha-prototype/`](android-alpha-prototype/) | The separate Android prototype used during Alpha development. |
 

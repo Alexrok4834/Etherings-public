@@ -1,0 +1,16 @@
+# Public website
+
+This folder contains the static website published at
+[etherings.xyz](https://etherings.xyz/): page source, styles, images, video,
+public whitepaper, sitemap and robots file. It is part of the Public Alpha
+source so you can inspect how the game is presented as well as how it works.
+
+To preview it locally, run `python -m http.server 8000` from this folder and
+open `http://localhost:8000/`. The Android download button points to the
+official public test APK; it is not served by this local preview.
+
+The version and release summary in `index.html` describe the published
+1.2.1a Alpha. Later release updates must be checked against the public APK
+and its release metadata before this page is changed.
+
+The current page uses three frames from October 5 Public Alpha recordings and a silent October 4–10 development recap. That recap also includes a separately labeled Beta prototype. The screenshots predate 1.2.1a and are dated on the page; the earlier MVP imagery and video are no longer used.

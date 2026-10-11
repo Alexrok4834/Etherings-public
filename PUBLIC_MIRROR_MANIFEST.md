@@ -9,6 +9,7 @@ This public repository contains the authored product source needed to study and 
 | `backend/` | MVP server, migrations, shared Alpha game rules and tests. |
 | `backend-alpha/` | Alpha server, its database schema and tests. |
 | `frontend/` | MVP web and administration client. |
+| `website/` | Published static landing page, styles, public media and whitepaper. |
 | `programs/` | Solana program source and development projects for ERU, Silver assets and related experiments. |
 | `docs/` | Product explanation, build guide, release history and known issues. |
 
