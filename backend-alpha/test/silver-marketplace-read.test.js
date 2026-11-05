@@ -78,13 +78,15 @@ test('finalized listing projection distinguishes active source from stale transf
     } } } }],
   ]);
   let discovered = 0;
+  let sellerFilter;
   const discoveredListing = Buffer.from(listing);
   discoveredListing.writeBigUInt64LE(9n, 112); // Discovery cannot set the displayed price.
   let discoveryGenesis = 'devnet-test';
   const discoveryRpc = {
     getGenesisHash: () => ({ send: async () => discoveryGenesis }),
-    getProgramAccounts: () => ({ send: async () => {
+    getProgramAccounts: (_program, options) => ({ send: async () => {
       discovered += 1;
+      sellerFilter = options.filters?.[1]?.memcmp;
       return [{ pubkey: listingKey, account: wrapped(market, discoveredListing) }];
     } }),
   };
@@ -106,17 +108,21 @@ test('finalized listing projection distinguishes active source from stale transf
   assert.equal(found.length, 1);
   assert.equal(found[0].priceLamports, '100000000000');
   assert.equal(discovered, 1);
+  assert.deepEqual(await reader.listActiveForSeller(seller),
+    [{ mintAddress: mint, kind: 'SILVER_RING' }]);
+  assert.deepEqual(sellerFilter, { offset: 48n, bytes: seller, encoding: 'base58' });
   accounts.get(source).data.parsed.info.owner = key();
   assert.equal((await reader.readListing(mint)).sourceReady, false);
   assert.equal((await reader.listActive()).length, 0);
+  assert.deepEqual(await reader.listActiveForSeller(seller), []);
   accounts.get(source).data.parsed.info.owner = seller;
   listing[9] = 4;
   accounts.set(listingKey, wrapped(market, listing));
   assert.equal((await reader.readListing(mint)).state, 'CANCELLED');
   assert.equal((await reader.readListing(mint)).sourceReady, false);
   assert.equal((await reader.listActive()).length, 0);
-  assert.equal(discovered, 3);
+  assert.equal(discovered, 5);
   discoveryGenesis = 'wrong-chain';
   await assert.rejects(reader.listActive(), /discovery RPC genesis mismatch/);
-  assert.equal(discovered, 3);
+  assert.equal(discovered, 5);
 });

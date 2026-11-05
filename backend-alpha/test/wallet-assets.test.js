@@ -48,6 +48,33 @@ test('finalized Kit balances and verified Silver inventory are bound to one wall
     ['eru', walletAddress, mint, 'finalized']]);
 });
 
+test('SOL and ERU reads start together after Silver inventory succeeds', async () => {
+  const calls = [];
+  let releaseSol;
+  let releaseEru;
+  const solPending = new Promise(resolve => { releaseSol = resolve; });
+  const eruPending = new Promise(resolve => { releaseEru = resolve; });
+  const rpc = {
+    getGenesisHash: () => ({ send: async () => genesis }),
+    getBalance: () => ({ send: () => { calls.push('sol'); return solPending; } }),
+    getTokenAccountsByOwner: () => ({ send: () => { calls.push('eru'); return eruPending; } }),
+  };
+  const wallet = { current: async () => ({ status: 200,
+    body: { walletAddress, environment: 'alpha-local' } }) };
+  const silver = { inventory: async () => { calls.push('silver');
+    return { status: 200, body: { assets: [] } }; } };
+  const assets = createWalletAssets({ wallet, silver, rpc, mint, environment: 'alpha-local' });
+  const read = assets.read(token);
+  try {
+    await new Promise(resolve => setImmediate(resolve));
+    assert.deepEqual(calls, ['silver', 'sol', 'eru']);
+  } finally {
+    releaseSol({ value: 1n });
+    releaseEru({ value: [] });
+  }
+  assert.equal((await read).status, 200);
+});
+
 test('unbound or unauthenticated wallet cannot reach chain reader', async () => {
   for (const binding of [
     { status: 401, body: { message: 'Authentication required.' } },

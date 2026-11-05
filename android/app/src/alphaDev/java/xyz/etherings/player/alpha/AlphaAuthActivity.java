@@ -171,7 +171,8 @@ public final class AlphaAuthActivity extends Activity {
         EditText address = field("Email", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
         address.setText(email);
         EditText password = field("Password (8+ characters)", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        password.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        EditText confirmation = field("Confirm password", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        confirmation.setImeOptions(EditorInfo.IME_ACTION_DONE);
         Button action = button("Create account");
         action.setOnClickListener(view -> {
             String inputEmail = address.getText().toString().trim();
@@ -179,8 +180,12 @@ public final class AlphaAuthActivity extends Activity {
             if (inputEmail.isEmpty() || inputPassword.length() < 8) {
                 feedback.setText("Enter an email and a password of at least 8 characters."); return;
             }
+            if (!inputPassword.equals(confirmation.getText().toString())) {
+                feedback.setText("Passwords do not match."); return;
+            }
             submit(action, () -> api.post("/auth/register", body("email", inputEmail, "password", inputPassword), null), result -> {
                 password.setText("");
+                confirmation.setText("");
                 if (result.status == 202) { email = inputEmail; verify(); }
                 else error(result.status);
             });

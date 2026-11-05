@@ -12,9 +12,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
@@ -29,6 +28,14 @@ public final class AppReleaseTest {
         assertTrue(release.isNewerThan(17));
         assertFalse(release.isNewerThan(18));
         assertFalse(release.isNewerThan(19));
+    }
+
+    @Test
+    public void release49NotifiesEveryEarlierPublicAlphaVersion() throws Exception {
+        AppRelease release = AppRelease.fromJson(validJson(49, true));
+        for (int installedCode = 42; installedCode < 49; installedCode++)
+            assertTrue("Installed code " + installedCode, release.isNewerThan(installedCode));
+        assertFalse(release.isNewerThan(49));
     }
 
     @Test
@@ -65,24 +72,17 @@ public final class AppReleaseTest {
     }
 
     @Test
-    public void checkedInServerMetadataIsValidAndDoesNotDowngradeCurrentBuild() throws Exception {
-        Path current = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-        Path metadata = null;
-        for (int depth = 0; depth < 5 && current != null; depth++, current = current.getParent()) {
-            Path candidate = current.resolve("infrastructure/android-download/release.json");
-            if (Files.isRegularFile(candidate)) {
-                metadata = candidate;
-                break;
-            }
+    public void publishedReleaseMetadataFixtureIsValidAndDoesNotDowngradeCurrentBuild() throws Exception {
+        AppRelease release;
+        try (InputStream metadata = getClass().getResourceAsStream("/public-alpha-release.json")) {
+            assertTrue("Public release fixture is missing", metadata != null);
+            release = AppRelease.fromJson(new JSONObject(
+                    new String(metadata.readAllBytes(), StandardCharsets.UTF_8)));
         }
-        assertTrue("release.json was not found from the Gradle working directory", metadata != null);
-
-        AppRelease release = AppRelease.fromJson(new JSONObject(
-                new String(Files.readAllBytes(metadata), StandardCharsets.UTF_8)));
-        assertEquals(17, release.versionCode());
-        assertFalse(release.isNewerThan(17));
-        assertTrue(release.matchesArtifact(52_339_256L,
-                "c9dc4a95a862e9e3e66a8a8659a95617a5bdeff3dc8ddc04ac052ff779e10ee0"));
+        assertEquals(49, release.versionCode());
+        assertFalse(release.isNewerThan(49));
+        assertTrue(release.matchesArtifact(123_050_250L,
+                "23f0eac4e3fba40c63117420cd4990c63fd70e507d8381f0b3a976f9174d9809"));
     }
 
     static JSONObject validJson(int versionCode, boolean required) throws JSONException {

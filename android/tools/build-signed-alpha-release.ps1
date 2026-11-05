@@ -67,8 +67,8 @@ try {
 
     Push-Location $androidRoot
     try {
-        $versionNameArg = '-PalphaReleaseVersionName=1.2.1a'
-        $versionCodeArg = '-PalphaReleaseVersionCode=48'
+        $versionNameArg = '-PalphaReleaseVersionName=1.3.0a'
+        $versionCodeArg = '-PalphaReleaseVersionCode=49'
         & $gradle[0].FullName --offline --no-daemon --max-workers=1 $versionNameArg `
             $versionCodeArg :app:assembleAlphaRelease
         if ($LASTEXITCODE -ne 0) { throw "Alpha release build failed (exit $LASTEXITCODE)." }

@@ -2,7 +2,7 @@ const MINT = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
 // Read-only, account-session-scoped projection. Listing status is finalized
 // chain state; this route does not issue signable intents or settle a sale.
-export function createSilverMarketplaceHttp({ auth, reader, silverReader = null,
+export function createSilverMarketplaceHttp({ auth, reader, wallet = null, silverReader = null,
   silverProgramId = null, flow = null }) {
   if (typeof auth?.me !== 'function' ||
       typeof reader?.readListing !== 'function')
@@ -16,10 +16,12 @@ export function createSilverMarketplaceHttp({ auth, reader, silverReader = null,
       if (!bySeller.has(listing.sellerAddress)) {
         const options = { programId: silverProgramId, cluster: 'devnet',
           walletAddress: listing.sellerAddress };
-        bySeller.set(listing.sellerAddress, [
-          ...await silverReader.listOwnedBoxes(options),
-          ...await silverReader.listOwnedRings(options),
-        ]);
+        const owned = typeof silverReader.listOwnedAssets === 'function'
+          ? await silverReader.listOwnedAssets(options)
+          : await Promise.all([
+            silverReader.listOwnedBoxes(options), silverReader.listOwnedRings(options),
+          ]);
+        bySeller.set(listing.sellerAddress, owned.flat());
       }
       const asset = bySeller.get(listing.sellerAddress).find(item =>
         item.mintAddress === listing.mintAddress && item.kind === listing.kind &&
@@ -43,6 +45,21 @@ export function createSilverMarketplaceHttp({ auth, reader, silverReader = null,
     return result;
   };
   return {
+    async myListingMints(token) {
+      const session = await auth.me(token);
+      if (session.status !== 200) return session;
+      if (typeof wallet?.current !== 'function' ||
+          typeof reader.listActiveForSeller !== 'function')
+        throw new Error('Marketplace listing status unavailable');
+      const binding = await wallet.current(token);
+      if (binding.status !== 200) return binding;
+      const walletAddress = binding.body.walletAddress;
+      if (!MINT.test(walletAddress ?? ''))
+        throw new Error('Marketplace wallet binding invalid');
+      return { status: 200, body: {
+        listings: await reader.listActiveForSeller(walletAddress),
+      } };
+    },
     async listings(token) {
       const session = await auth.me(token);
       if (session.status !== 200) return session;

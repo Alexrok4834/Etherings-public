@@ -2,6 +2,17 @@
 
 These are the versions players could download. The separate **1.1.1a** build was tested on devices but was not released to everyone.
 
+## 1.3.0a — 4 November 2026
+
+- Registration asks you to repeat your password and points out a mismatch before creating an account.
+- Rings and Boxes offered for sale show **LISTED** in the inventory. The label disappears when the sale listing is no longer active.
+- A Cooper Ring in Draw darkens after you actually receive it, so the result is not revealed early.
+- When your ERT balance is too low for Draw, the app shows how much is missing and leaves the Draw button inactive.
+- When you return to Home with a Silver Ring selected, the app starts checking that Ring alongside other account information, removing one avoidable wait in this case.
+- The app continues to check for new versions on the sign-in and game screens. A compatible earlier Public Alpha version can update directly to 1.3.0a.
+
+The signed Android update was installed over 1.2.1a on a Samsung A8 without erasing app data. Home, Rings, Draw, Market and Wallet opened. A consistent speed improvement across all screens has not been measured, and the update prompt was not physically checked on a phone still running an older version. No purchase, transfer, Box opening or other paid action was performed during this release check.
+
 ## 1.2.1a — 9 October 2026
 
 - If a Silver Ring action takes longer than expected, the app checks the action already submitted before asking the player to try again.

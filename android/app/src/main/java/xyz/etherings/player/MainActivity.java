@@ -315,6 +315,8 @@ public class MainActivity extends Activity {
     private TextView ringsTab;
     private TextView marketplaceTab;
     private Map<String, Bitmap> alphaSilverArtwork = Collections.emptyMap();
+    private java.util.Set<String> alphaSilverListedMints = Collections.emptySet();
+    private boolean alphaSilverListingsUnavailable;
     private Map<String, Bitmap> alphaMarketplaceArtwork = Collections.emptyMap();
     private boolean alphaHomeRefreshing;
     private boolean alphaInventoryRefreshing;
@@ -478,6 +480,8 @@ public class MainActivity extends Activity {
         alphaCooperArtwork = Collections.emptyMap();
         alphaSilverInventory = null;
         alphaSilverArtwork = Collections.emptyMap();
+        alphaSilverListedMints = Collections.emptySet();
+        alphaSilverListingsUnavailable = false;
         alphaMarketplaceArtwork = Collections.emptyMap();
         alphaMarketplaceLastListings = null;
         alphaMarketplaceLastAssets = null;
@@ -1827,6 +1831,8 @@ public class MainActivity extends Activity {
 
     private void loadAlphaHome() {
         int request = ++alphaSilverGeneration;
+        boolean previouslySilver = alphaRingEquipment != null &&
+                "SILVER_RING".equals(alphaRingEquipment.selection.kind);
         alphaHomeRefreshing = true;
         copperRingArtworkView.setVisibility(View.GONE);
         copperRingRetryView.setVisibility(View.GONE);
@@ -1843,11 +1849,17 @@ public class MainActivity extends Activity {
                     (AlphaRingEquipmentSnapshot) Class.forName(
                             "xyz.etherings.player.alpha.AlphaRingEquipmentClient")
                             .getMethod("load", android.content.Context.class).invoke(null, this));
+            Future<SilverInventorySnapshot> silverRead = previouslySilver ?
+                    alphaAssetReadIo.submit(() ->
+                            (SilverInventorySnapshot) Class.forName(
+                                    "xyz.etherings.player.alpha.AlphaSilverInventoryClient")
+                                    .getMethod("load", android.content.Context.class).invoke(null, this)) : null;
             try {
                 coopers = cooperRead.get();
                 equipment = equipmentRead.get();
                 if ("SILVER_RING".equals(equipment.selection.kind))
-                    inventory = (SilverInventorySnapshot) Class.forName(
+                    inventory = silverRead != null ? silverRead.get() :
+                            (SilverInventorySnapshot) Class.forName(
                             "xyz.etherings.player.alpha.AlphaSilverInventoryClient")
                             .getMethod("load", android.content.Context.class).invoke(null, this);
             } catch (Exception ignored) { }
@@ -1994,6 +2006,8 @@ public class MainActivity extends Activity {
 
     private void loadAlphaSilverInventory() {
         int request = ++alphaSilverGeneration;
+        alphaSilverListedMints = Collections.emptySet();
+        alphaSilverListingsUnavailable = false;
         boolean reopenCooper = alphaCooperDetail;
         String reopenCooperId = alphaCooperDetailId;
         alphaInventoryRefreshing = true;
@@ -2010,6 +2024,25 @@ public class MainActivity extends Activity {
         panelBodyView.setText("Loading Silver inventory...");
         if (alphaSilverInventory != null && alphaStarterInventory != null &&
                 alphaRingEquipment != null) renderAlphaSilverInventory();
+        alphaAssetReadIo.execute(() -> {
+            java.util.Set<String> listed = Collections.emptySet();
+            boolean unavailable = false;
+            try {
+                listed = (java.util.Set<String>) Class.forName(
+                        "xyz.etherings.player.alpha.AlphaMarketplaceClient")
+                        .getMethod("ownedActiveMints", android.content.Context.class)
+                        .invoke(null, this);
+            } catch (Exception error) { unavailable = true; }
+            java.util.Set<String> verified = listed;
+            boolean failed = unavailable;
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed() || selectedMode != Mode.RINGS ||
+                        request != alphaSilverGeneration) return;
+                alphaSilverListedMints = verified;
+                alphaSilverListingsUnavailable = failed;
+                if (!alphaInventoryRefreshing) renderAlphaSilverInventory();
+            });
+        });
         alphaScreenIo.execute(() -> {
             SilverInventorySnapshot result = null;
             AlphaStarterSnapshot starter = null;
@@ -2140,14 +2173,16 @@ public class MainActivity extends Activity {
         boolean unknown = !alphaRingEquipment.effectsEnabled;
         boolean pending = alphaSilverInventory.assets().isEmpty() &&
                 !"confirmed".equals(alphaStarterInventory.silverStatus());
-        panelBodyView.setVisibility(unknown || pending ? View.VISIBLE : View.GONE);
+        panelBodyView.setVisibility(unknown || pending || alphaSilverListingsUnavailable ?
+                View.VISIBLE : View.GONE);
         panelBodyView.setText(unknown ?
                 "Selected Silver chain eligibility unknown; gameplay effects disabled" :
                 "awaiting_wallet".equals(alphaStarterInventory.silverStatus()) ?
                 "Create and bind a wallet to receive the Silver Box" :
                 "unknown".equals(alphaStarterInventory.silverStatus()) ?
                 "Silver Box status unavailable; Cooper Rings remain available" :
-                "Silver Box issuance pending");
+                pending ? "Silver Box issuance pending" :
+                "Listing status unavailable. Refresh inventory to retry.");
         if (alphaInventoryRefreshing) {
             panelBodyView.setText("Checking current ownership; actions available after refresh.");
             panelBodyView.setVisibility(View.VISIBLE);
@@ -2195,6 +2230,7 @@ public class MainActivity extends Activity {
 
     private FrameLayout alphaSilverInventoryCard(SilverInventorySnapshot.Asset asset) {
         FrameLayout card = new FrameLayout(this);
+        boolean listed = alphaSilverListedMints.contains(asset.mint);
         boolean equipped = !asset.isBox() && alphaRingEquipment.effectsEnabled &&
                 alphaRingEquipment.selection.matches("SILVER_RING", asset.mint);
         card.setBackground(new BorderDrawable(equipped ? accentColor : outlineColor,
@@ -2220,9 +2256,9 @@ public class MainActivity extends Activity {
             card.addView(unavailable, new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         }
-        if (asset.isOpening()) {
+        if (listed || asset.isOpening()) {
             TextView pending = new TextView(this);
-            pending.setText("OPENING");
+            pending.setText(listed ? "LISTED" : "OPENING");
             pending.setTextColor(textColor);
             pending.setBackgroundColor(panelColor);
             pending.setPadding(dp(6), dp(4), dp(6), dp(4));
@@ -2232,7 +2268,8 @@ public class MainActivity extends Activity {
             label.bottomMargin = dp(8);
             card.addView(pending, label);
         }
-        if (!asset.isBox() && alphaRingEquipment.selection.matches("SILVER_RING", asset.mint)) {
+        if (!listed && !asset.isBox() &&
+                alphaRingEquipment.selection.matches("SILVER_RING", asset.mint)) {
             TextView selected = new TextView(this);
             selected.setText(alphaRingEquipment.effectsEnabled ? "EQUIPPED" : "UNVERIFIED");
             selected.setTextColor(textColor);
@@ -2259,6 +2296,7 @@ public class MainActivity extends Activity {
                 "Silver Ring, design " + asset.designId +
                         (alphaRingEquipment.selection.matches("SILVER_RING", asset.mint) ?
                                 ", equipped" : "")) + " number " + asset.serial +
+                (listed ? ", listed for sale" : "") +
                 ", " + asset.mint + ", view details");
         card.setClickable(true);
         card.setFocusable(true);

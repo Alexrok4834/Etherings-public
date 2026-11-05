@@ -18,7 +18,7 @@ EtheRings is an Android game where your everyday steps help you build a collecti
 
 **The Public Alpha is live on Android 9+ and Solana Devnet.** Come play, explore what's working, and help us make the game better.
 
-[**Download Public Alpha**](https://app.etherings.xyz/download/android/etherings.apk) · [**Join our Discord**](https://discord.gg/5jQzegWuhz) · [Latest release](https://github.com/Alexrok4834/Etherings-public/releases/latest) · [Website](https://etherings.xyz/) · [Alpha Whitepaper](docs/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf)
+[**Download Public Alpha 1.3.0a**](https://app.etherings.xyz/download/android/etherings.apk) · [**Join our Discord**](https://discord.gg/99VN2uQ4GJ) · [Latest release](https://github.com/Alexrok4834/Etherings-public/releases/latest) · [Website](https://etherings.xyz/) · [Alpha Whitepaper](docs/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf)
 
 ## What can you do in Alpha?
 
@@ -58,7 +58,7 @@ In the current Alpha, **Cooper Rings** are items in your game account. **Silver 
 
 We're looking for real player feedback, not just a list of completed downloads. Tell us what feels fun, what feels confusing, what breaks, and what you'd like to do more of.
 
-Join the [EtheRings Discord](https://discord.gg/5jQzegWuhz) for testing updates and bug reports. If you report a wallet-related issue, share only your **public wallet address** — never a seed phrase or private key.
+Join the [EtheRings Discord](https://discord.gg/99VN2uQ4GJ) for testing updates and bug reports. If you report a wallet-related issue, share only your **public wallet address** — never a seed phrase or private key.
 
 **In Rings We Trust.**
 

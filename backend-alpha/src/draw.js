@@ -107,11 +107,16 @@ export function createAlphaDraw({ pool, auth, walletEnvironment, now = () => new
       if (!validRewards(rows)) return UNAVAILABLE;
       const day = utcDay(now());
       const used = await attempts(pool, context.id, day);
-      const cooperToday = (await pool.query(`SELECT 1 FROM alpha_draw_results r
+      const cooperResult = (await pool.query(`SELECT f.state FROM alpha_draw_results r
         JOIN alpha_draw_operations o ON o.id = r.operation_id
+        LEFT JOIN alpha_draw_fulfillments f ON f.result_id = r.id
         WHERE r.account_id = $1 AND o.utc_day = $2
           AND r.selected_reward_type = 'COPPER_RING' LIMIT 1`,
-      [context.id, day])).rowCount > 0;
+      [context.id, day])).rows[0];
+      const cooperToday = !!cooperResult;
+      const available = (await pool.query(`SELECT available::text AS available
+        FROM alpha_ert_available WHERE account_id = $1`, [context.id])).rows[0];
+      const availableErtExact = canonicalErt(available?.available ?? '0');
       const eligible = rows.filter(row => row.reward_type !== 'COPPER_RING' || !cooperToday);
       const totalWeight = eligible.reduce((sum, row) => sum + row.weight, 0);
       return { status: 200, body: { contractVersion: 'raffle-v2',
@@ -119,6 +124,7 @@ export function createAlphaDraw({ pool, auth, walletEnvironment, now = () => new
           configurationVersion: config.id, title: config.title, description: null,
           cost: { currency: 'ERT', amountExact: canonicalErt(config.cost_ert),
             amountDisplay: displayErt(config.cost_ert) },
+          availableErtExact,
           attempts: { limit: config.daily_user_attempt_limit,
             used: Math.min(used, config.daily_user_attempt_limit),
             remaining: Math.max(0, config.daily_user_attempt_limit - used),
@@ -126,6 +132,8 @@ export function createAlphaDraw({ pool, auth, walletEnvironment, now = () => new
           rewards: eligible.map((row, index) => rewardView(row, totalWeight, index)),
           displayRewards: rows.map(row => ({ ...rewardView(row, totalWeight),
             eligible: row.reward_type !== 'COPPER_RING' || !cooperToday,
+            ...(row.reward_type === 'COPPER_RING' ?
+              { receivedToday: cooperResult?.state === 'CONFIRMED' } : {}),
             probability: { numerator: row.reward_type === 'COPPER_RING' && cooperToday
               ? '0' : String(row.weight), denominator: String(totalWeight) } })) } } };
     },

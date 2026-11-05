@@ -56,6 +56,14 @@ export function createSilverFirstEntry({ pool, chain, cluster, programId, collec
   }
 
   async function inventoryResponse(accountId, walletAddress, assets) {
+    const ownedTask = (typeof chain.listOwnedAssets === 'function'
+      ? chain.listOwnedAssets({ programId, cluster, walletAddress })
+      : Promise.all([
+        typeof chain.listOwnedBoxes === 'function'
+          ? chain.listOwnedBoxes({ programId, cluster, walletAddress }) : [],
+        chain.listOwnedRings({ programId, cluster, walletAddress }),
+      ])).then(value => ({ value }), error => ({ error }));
+    try {
     if (breedingInventoryEnabled) {
       const bred = (await pool.query(`SELECT o.id, o.first_ring_id, o.second_ring_id,
         o.first_uses, o.second_uses, o.issuance_id, o.entitlement_digest,
@@ -125,13 +133,9 @@ export function createSilverFirstEntry({ pool, chain, cluster, programId, collec
       }
     }
     const seen = new Set(assets.map(asset => asset.mintAddress));
-    const [ownedBoxes, transferred] = typeof chain.listOwnedAssets === 'function'
-      ? await chain.listOwnedAssets({ programId, cluster, walletAddress })
-      : await Promise.all([
-        typeof chain.listOwnedBoxes === 'function'
-          ? chain.listOwnedBoxes({ programId, cluster, walletAddress }) : [],
-        chain.listOwnedRings({ programId, cluster, walletAddress }),
-      ]);
+    const ownedResult = await ownedTask;
+    if ('error' in ownedResult) throw ownedResult.error;
+    const [ownedBoxes, transferred] = ownedResult.value;
     for (const box of ownedBoxes) {
       if (box.finalized !== true || box.kind !== 'SILVER_BOX' ||
           box.programId !== programId || box.cluster !== cluster ||
@@ -162,6 +166,10 @@ export function createSilverFirstEntry({ pool, chain, cluster, programId, collec
       seen.add(ring.mintAddress);
     }
     return { status: 200, body: { assets } };
+    } catch (error) {
+      await ownedTask;
+      throw error;
+    }
   }
 
   return {

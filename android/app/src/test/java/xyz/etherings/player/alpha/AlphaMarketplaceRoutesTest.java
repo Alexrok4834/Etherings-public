@@ -10,6 +10,7 @@ public final class AlphaMarketplaceRoutesTest {
 
     @Test public void permitsOnlyExpectedMarketplacePaths() {
         assertTrue(AlphaAuthApi.isWalletGet("/me/marketplace/listings"));
+        assertTrue(AlphaAuthApi.isWalletGet("/me/marketplace/my-listing-mints"));
         assertTrue(AlphaAuthApi.isWalletGet("/me/marketplace/listing/" + MINT));
         for (String action : new String[] { "review", "refresh", "submit", "status" })
             assertTrue(AlphaAuthApi.isWalletPost("/me/marketplace/" + action));

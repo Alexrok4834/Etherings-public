@@ -18,9 +18,9 @@ Build the Alpha development app:
 .\gradlew.bat :app:assembleAlphaDev
 ```
 
-On macOS or Linux, use `./gradlew` instead. The build includes the pinned Trust Wallet Core library in `android/app/libs/`; Gradle verifies its SHA-256 hash. `alphaDev` is a separate debug package. Its private development API address was replaced with a `.invalid` placeholder in this public export, so configure your own test endpoint before trying to use that build. To build the **1.2.1a Alpha release configuration**, use `:app:assembleAlphaRelease` with your own local signing key. The build reads its keystore path, alias and passwords from `ETHERINGS_ANDROID_KEYSTORE_PATH`, `ETHERINGS_ANDROID_KEY_ALIAS`, `ETHERINGS_ANDROID_KEYSTORE_PASSWORD` and `ETHERINGS_ANDROID_KEY_PASSWORD`. Keep the keystore outside the repository. Your APK will have your signature and cannot install over the official app as an update.
+On macOS or Linux, use `./gradlew` instead. The build includes the pinned Trust Wallet Core library in `android/app/libs/`; Gradle verifies its SHA-256 hash. `alphaDev` is a separate debug package. Its private development API address was replaced with a `.invalid` placeholder in this public export, so configure your own test endpoint before trying to use that build. To build the **1.3.0a Alpha release configuration**, use `:app:assembleAlphaRelease` with your own local signing key. The build reads its keystore path, alias and passwords from `ETHERINGS_ANDROID_KEYSTORE_PATH`, `ETHERINGS_ANDROID_KEY_ALIAS`, `ETHERINGS_ANDROID_KEYSTORE_PASSWORD` and `ETHERINGS_ANDROID_KEY_PASSWORD`. Keep the keystore outside the repository. Your APK will have your signature and cannot install over the official app as an update.
 
-We built `assembleAlphaDev` and assembled `alphaRelease` **1.2.1a/48** from the reviewed export. The latter used a disposable local signing key, which was deleted after the build. It was a build check, not a new official signed APK or a release.
+The official signed **1.3.0a/49** package was released separately. A build from this public source uses your own signing key and is not the official APK. This export passed `assembleAlphaDev` and `assembleAlphaRelease`; the latter used a disposable local signing key outside the repository, deleted after the build.
 
 ## Game servers and web client
 

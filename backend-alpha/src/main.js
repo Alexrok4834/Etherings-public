@@ -58,6 +58,7 @@ import { createSilverMarketplaceReader } from './silver-marketplace-read.js';
 import { createSilverMarketplaceHttp } from './silver-marketplace-http.js';
 import { createSilverMarketplaceFlow } from './silver-marketplace-flow.js';
 import { createSilverDirectTransferFlow } from './silver-direct-transfer-flow.js';
+import { installKeeperRpcMeter } from './keeper-rpc-meter.js';
 import { address, createSolanaRpc, getProgramDerivedAddress } from '@solana/kit';
 
 const required = ['ALPHA_DATABASE_URL', 'ALPHA_CODE_SECRET', 'RESEND_API_KEY', 'ALPHA_EMAIL_FROM', 'ALPHA_WALLET_ENVIRONMENT'];
@@ -89,6 +90,18 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invali
 const listenHost = process.env.ALPHA_LISTEN_HOST ?? '127.0.0.1';
 if (!isIP(listenHost)) throw new Error('Invalid Alpha listen host');
 const pool = new pg.Pool({ connectionString: process.env.ALPHA_DATABASE_URL, max: 8 });
+// Opt-in count of physical calls to the primary RPC. No payloads or URLs are logged.
+const apiRpcMeter = process.env.ALPHA_API_RPC_METRICS_ENABLED === 'true'
+  ? installKeeperRpcMeter({ rpcUrl: process.env.ALPHA_ERU_PROOF_RPC_URL }) : null;
+const apiRpcReportTimer = apiRpcMeter ? setInterval(() => {
+  console.log('Alpha API primary RPC method counts',
+    JSON.stringify(apiRpcMeter.snapshotAndReset()));
+}, 15 * 60_000) : null;
+apiRpcReportTimer?.unref();
+const measureApi = (name, task) => apiRpcMeter ? apiRpcMeter.measure(name, task) : task();
+const measureMethod = (service, method, name) => !apiRpcMeter || !service ? service : {
+  ...service, [method]: (...args) => measureApi(name, () => service[method](...args)),
+};
 const mailer = new ResendMailTransport({
   apiKey: process.env.RESEND_API_KEY,
   from: process.env.ALPHA_EMAIL_FROM
@@ -217,9 +230,11 @@ try {
       throw new Error('Alpha M2E step-sync requires Devnet Silver and Equip');
     await pool.query('SELECT id FROM alpha_m2e_daily_snapshots LIMIT 1');
     await pool.query('SELECT id FROM alpha_m2e_batches LIMIT 1');
-    m2eStepSync = createM2eStepSync({ pool, chain: silverChain,
+    const stepSync = createM2eStepSync({ pool, chain: silverChain,
       marketReader: marketplaceReader, programId: silverProgram, cluster: 'devnet',
       walletEnvironment: process.env.ALPHA_WALLET_ENVIRONMENT, config: m2eConfig });
+    m2eStepSync = apiRpcMeter ? { receive: (token, body) => apiRpcMeter.measure(
+      'step-sync', () => stepSync.receive(token, body)) } : stepSync;
   }
   const starterEnabled = process.env.ALPHA_SILVER_STARTER_ENABLED === 'true';
   let silverIssuer = null;
@@ -288,7 +303,7 @@ try {
     const marketEnabled = marketplaceFlag === 'true';
     if (marketEnabled) await pool.query(
       'SELECT signature FROM alpha_silver_marketplace_submissions LIMIT 1');
-    marketplace = createSilverMarketplaceHttp({ auth, reader: marketplaceReader,
+    marketplace = createSilverMarketplaceHttp({ auth, wallet, reader: marketplaceReader,
       silverReader: silverChain, silverProgramId: silverProgram,
       flow: marketEnabled ? createSilverMarketplaceFlow({ pool, auth,
         marketReader: marketplaceReader, silverReader: silverChain, equipment,
@@ -301,7 +316,7 @@ try {
         marketProgramId: marketProgram, silverProgramId: silverProgram,
         rpc: readRpc(process.env.ALPHA_ERU_PROOF_RPC_URL),
         discoveryRpc: readRpc(process.env.ALPHA_MARKETPLACE_DISCOVERY_RPC_URL) });
-      const primaryReadMarket = createSilverMarketplaceHttp({ auth, reader: primaryReadReader,
+      const primaryReadMarket = createSilverMarketplaceHttp({ auth, wallet, reader: primaryReadReader,
         silverReader: primaryReadChain, silverProgramId: silverProgram });
       const alternativeReader = createSilverMarketplaceReader({
         rpcUrl: alternativeReadUrl,
@@ -309,13 +324,18 @@ try {
         marketProgramId: marketProgram, silverProgramId: silverProgram,
         rpc: readRpc(alternativeReadUrl),
         discoveryRpc: readRpc(process.env.ALPHA_MARKETPLACE_DISCOVERY_RPC_URL) });
-      const alternativeMarket = createSilverMarketplaceHttp({ auth, reader: alternativeReader,
+      const alternativeMarket = createSilverMarketplaceHttp({ auth, wallet, reader: alternativeReader,
         silverReader: alternativeSilverChain, silverProgramId: silverProgram });
       const primaryMarket = marketplace;
       marketplace = { ...primaryMarket,
         listings: createReadOnlyRpcRoute({ primary: token => primaryReadMarket.listings(token),
           alternative: token => alternativeMarket.listings(token), mode: marketListReadMode,
           scope: readScope }),
+        myListingMints: createReadOnlyRpcRoute({
+          primary: token => primaryReadMarket.myListingMints(token),
+          alternative: token => alternativeMarket.myListingMints(token),
+          mode: marketListReadMode, scope: readScope,
+        }),
       };
     }
   }
@@ -478,19 +498,22 @@ try {
   }
   const server = createAlphaServer(
     auth,
-    wallet, eru, silver, silverOpening, silverCandidateIntent, assets, starterCooper,
-    undefined, equipment, m2eStepSync,
+    wallet, eru, measureMethod(silver, 'inventory', 'silver-inventory'),
+    silverOpening, silverCandidateIntent, measureMethod(assets, 'read', 'wallet-assets'),
+    starterCooper, undefined, measureMethod(equipment, 'current', 'ring-equipment'), m2eStepSync,
     m2eStepSync ? createM2eProfile({ pool, auth, config: m2eConfig,
       resolveEligibleRingCount: async accountId => {
-        return resolveM2eDisplayRingCount({ client: pool, accountId,
+        const read = () => resolveM2eDisplayRingCount({ client: pool, accountId,
           walletEnvironment: process.env.ALPHA_WALLET_ENVIRONMENT,
           chain: silverChain, marketReader: marketplaceReader,
           programId: silverProgram, cluster: 'devnet' });
+        return apiRpcMeter ? apiRpcMeter.measure('m2e-today', read) : read();
       } }) : null,
     createAdminErtCredit({ pool, auth }),
     createCooperPointAllocation({ pool, auth }),
     cooperLevelUp, cooperEru, silverProgression, silverAllocation, draw,
-    undefined, cooperBreeding, marketplace, silverDirectTransfer,
+    undefined, cooperBreeding, measureMethod(marketplace, 'listings', 'market-list'),
+    silverDirectTransfer,
     sendFlag === 'true' ? createAdminOperationalStats({ pool, auth,
       chain: createCooperEruChainReader({ rpcUrl: process.env.ALPHA_ERU_PROOF_RPC_URL,
         cluster: 'devnet' }), deployment: eruDeployment }) : null,
@@ -506,7 +529,7 @@ try {
     const tick = async () => {
       if (inFlight) return;
       inFlight = true;
-      try { await adminEruTransfer.tick(); }
+      try { await measureApi('admin-eru-tick', () => adminEruTransfer.tick()); }
       catch (error) { console.error('Admin ERU tick failed', error.code ?? error.name); }
       finally { inFlight = false; }
     };
@@ -519,7 +542,7 @@ try {
     const tick = async () => {
       if (inFlight) return;
       inFlight = true;
-      try { await adminBoxGrant.tick(); }
+      try { await measureApi('admin-box-tick', () => adminBoxGrant.tick()); }
       catch (error) { console.error('Admin Box grant tick failed', error.code ?? error.name); }
       finally { inFlight = false; }
     };
@@ -532,7 +555,7 @@ try {
     const tick = async () => {
       if (inFlight) return;
       inFlight = true;
-      try { await silverIssuer.tick(); }
+      try { await measureApi('silver-issuer-tick', () => silverIssuer.tick()); }
       catch (error) { console.error('Silver starter tick failed', error.code ?? error.name); }
       finally { inFlight = false; }
     };
@@ -545,7 +568,7 @@ try {
     const tick = async () => {
       if (inFlight) return;
       inFlight = true;
-      try { await drawBoxIssuer.tick(); }
+      try { await measureApi('draw-box-tick', () => drawBoxIssuer.tick()); }
       catch (error) { console.error('Draw Box issuance failed', error.code ?? error.name); }
       finally { inFlight = false; }
     };
@@ -558,7 +581,7 @@ try {
     const tick = async () => {
       if (inFlight) return;
       inFlight = true;
-      try { await drawEruIssuer.tick(); }
+      try { await measureApi('draw-eru-tick', () => drawEruIssuer.tick()); }
       catch (error) { console.error('Draw ERU settlement failed', error.code ?? error.name); }
       finally { inFlight = false; }
     };
@@ -568,18 +591,26 @@ try {
   }
   if (silverProgressionFlow) {
     let inFlight = false;
+    let lastHistoricalScanAt = -Infinity;
     const tick = async () => {
       if (inFlight) return;
       inFlight = true;
       try {
+        const scanHistorical = performance.now() - lastHistoricalScanAt >= 5 * 60_000;
         const pending = (await pool.query(`SELECT p.account_id, p.id
           FROM alpha_silver_progression_operations p
           WHERE p.status = 'prepared' AND EXISTS (
             SELECT 1 FROM alpha_silver_progression_submissions s
             WHERE s.operation_id = p.id)
-          ORDER BY p.created_at LIMIT 10`)).rows;
+          AND ($1::boolean OR p.created_at >= now() - interval '1 hour'
+            OR EXISTS (SELECT 1 FROM alpha_silver_progression_submissions s
+              WHERE s.operation_id = p.id
+                AND s.recorded_at >= now() - interval '1 hour'))
+          ORDER BY p.created_at LIMIT 10`, [scanHistorical])).rows;
+        if (scanHistorical) lastHistoricalScanAt = performance.now();
         for (const row of pending) {
-          try { await silverProgressionFlow.status(row.account_id, row.id); }
+          try { await measureApi('silver-progression-tick', () =>
+            silverProgressionFlow.status(row.account_id, row.id)); }
           catch (error) { console.error('Silver progression reconciliation failed',
             error.code ?? error.name); }
         }
@@ -604,7 +635,8 @@ try {
               WHERE s.operation_id = o.id)
           ORDER BY o.created_at LIMIT 10`)).rows;
         for (const row of pending) {
-          try { await cooperBreedingFlow.status(row.account_id, row.id); }
+          try { await measureApi('cooper-breeding-tick', () =>
+            cooperBreedingFlow.status(row.account_id, row.id)); }
           catch (error) { console.error('Cooper breeding reconciliation failed',
             error.code ?? error.name); }
         }
@@ -620,6 +652,8 @@ try {
     process.on(signal, () => server.close(() => pool.end()));
   }
 } catch (error) {
+  if (apiRpcReportTimer) clearInterval(apiRpcReportTimer);
+  apiRpcMeter?.uninstall();
   await pool.end();
   throw new Error('Alpha service startup failed', { cause: error.code });
 }

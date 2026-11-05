@@ -41,6 +41,36 @@ export function createSilverMarketplaceReader({ rpcUrl, discoveryRpcUrl,
   };
 
   return {
+    async listActiveForSeller(walletAddress) {
+      const seller = address(walletAddress);
+      if (!discoveryRpc ||
+          await discoveryRpc.getGenesisHash().send() !== expectedGenesisHash)
+        throw new Error('Marketplace discovery RPC genesis mismatch');
+      const entries = await discoveryRpc.getProgramAccounts(market, {
+        encoding: 'base64', commitment: 'finalized',
+        filters: [{ dataSize: 320 }, { memcmp: {
+          offset: 48n, bytes: seller, encoding: 'base58',
+        } }],
+      }).send();
+      if (entries.length > 100) throw new Error('Marketplace seller listing page required');
+      const listed = [];
+      for (const entry of entries) {
+        const raw = bytes(entry.account);
+        if (entry.account.owner !== market || raw?.length !== 320 ||
+            !raw.subarray(0, 8).equals(MAGIC) || raw[8] !== 1 || raw[9] !== 1 ||
+            ![1, 2].includes(raw[10]) || decode(raw.subarray(48, 80)) !== seller)
+          continue;
+        const mintAddress = decode(raw.subarray(16, 48));
+        if (entry.pubkey !== await pda(market, seed('silver-market-listing'),
+          encode(mintAddress))) continue;
+        const listing = await this.readListing(mintAddress);
+        const kind = raw[10] === 2 ? 'SILVER_RING' : 'SILVER_BOX';
+        if (listing?.address === entry.pubkey && listing.state === 'ACTIVE' &&
+            listing.sourceReady && listing.sellerAddress === seller &&
+            listing.kind === kind) listed.push({ mintAddress, kind });
+      }
+      return listed;
+    },
     async verifyPinnedPrograms() {
       await chain();
       for (const programId of [market, silver]) {

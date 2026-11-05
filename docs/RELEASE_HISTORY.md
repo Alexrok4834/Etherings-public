@@ -13,7 +13,8 @@ This timeline comes from the project's development Git records and release recei
 | 7 October 2026 | **1.1.2.1a** | The app checked for a new version when brought to the foreground instead of waiting on an old cached result. |
 | 8 October 2026 | **1.2a** | Improved step timing and delivery on affected Android devices. Existing Alpha data stayed in place during update. Real walking on the affected models still needed further observation. |
 | 9 October 2026 | **1.2.1a** | Improved recovery when a Silver Ring action takes too long to confirm, clearer guidance when test SOL is insufficient, and automatic retry of a newly awarded Box's opening readiness. |
+| 4 November 2026 | **1.3.0a** | Password confirmation during registration, sale labels on listed Rings and Boxes, clearer Draw affordability, and a corrected Cooper Ring reveal. Reopening Home with a Silver Ring selected avoids one wait. |
 
-The signed **1.1.1a** build was used on test devices on 7 October for Box and artwork corrections. It was **not** published as a public release. The current published version is **1.2.1a**; see the [latest release](https://github.com/Alexrok4834/Etherings-public/releases/latest) and [download page](https://app.etherings.xyz/download/android/etherings.apk).
+The signed **1.1.1a** build was used on test devices on 7 October for Box and artwork corrections. It was **not** published as a public release. The current published version is **1.3.0a**; see the [latest release](https://github.com/Alexrok4834/Etherings-public/releases/latest) and [download page](https://app.etherings.xyz/download/android/etherings.apk).
 
 Each entry describes a released change, not a promise that every related bug is resolved on every device. See [known issues](KNOWN_ISSUES.md) for what still needs observation. The full source export was added to this public repository after the 1.2.1a release; the earlier GitHub release tag retains its historical limited source snapshot.

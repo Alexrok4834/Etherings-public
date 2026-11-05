@@ -193,6 +193,8 @@ export function createAlphaServer(auth, wallet, eru = null, silver = null,
         result = await marketplace.listing(token, marketListing);
       } else if (request.method === 'GET' && path === '/me/marketplace/listings' && marketplace) {
         result = await marketplace.listings(token);
+      } else if (request.method === 'GET' && path === '/me/marketplace/my-listing-mints' && marketplace) {
+        result = await marketplace.myListingMints(token);
       } else if (request.method === 'POST' && path === '/auth/logout') {
         result = await auth.logout(token);
       } else if (request.method === 'GET' && path === '/wallet' && wallet) {

@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import org.json.JSONObject;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import xyz.etherings.player.BuildConfig;
 import xyz.etherings.player.alpha.wallet.AlphaWallet;
@@ -64,6 +66,22 @@ public final class AlphaMarketplaceClient {
 
     public static JSONObject listings(Context context) throws Exception {
         return get(context, "/me/marketplace/listings");
+    }
+
+    public static Set<String> ownedActiveMints(Context context) throws Exception {
+        org.json.JSONArray rows = get(context, "/me/marketplace/my-listing-mints")
+                .getJSONArray("listings");
+        Set<String> mints = new HashSet<>();
+        for (int index = 0; index < rows.length(); index++) {
+            JSONObject listing = rows.getJSONObject(index);
+            String mint = listing.getString("mintAddress");
+            if (!mint.matches("[1-9A-HJ-NP-Za-km-z]{32,44}") ||
+                    !("SILVER_BOX".equals(listing.getString("kind")) ||
+                      "SILVER_RING".equals(listing.getString("kind"))) ||
+                    !mints.add(mint))
+                throw new IllegalStateException("Marketplace asset mismatch");
+        }
+        return mints;
     }
 
     public static JSONObject listingOrNull(Context context, String mint) throws Exception {

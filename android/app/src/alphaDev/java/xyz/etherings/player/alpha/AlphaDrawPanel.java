@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 
 import xyz.etherings.player.BuildConfig;
 import xyz.etherings.player.R;
+import xyz.etherings.player.economy.ErtValue;
 import xyz.etherings.player.raffle.RafflePendingDrawEntity;
 import xyz.etherings.player.raffle.RafflePendingDrawState;
 import xyz.etherings.player.raffle.RafflePendingDrawStore;
@@ -222,6 +223,7 @@ public final class AlphaDrawPanel extends LinearLayout {
         if (!"ERT".equals(cost.getString("currency")) ||
                 !cost.getString("amountExact").matches("[0-9]+(?:\\.[0-9]+)?"))
             throw new IllegalStateException("Draw cost invalid");
+        ErtValue.fromExact(draw.getString("availableErtExact"));
         JSONObject attempts = draw.getJSONObject("attempts");
         int limit = attempts.getInt("limit");
         int used = attempts.getInt("used");
@@ -324,15 +326,18 @@ public final class AlphaDrawPanel extends LinearLayout {
         JSONObject cost = draw == null ? null : draw.optJSONObject("cost");
         JSONObject count = draw == null ? null : draw.optJSONObject("attempts");
         String amount = cost == null ? "--" : cost.optString("amountDisplay", "--");
-        status.setText("One Draw · " + amount + " ERT");
+        boolean affordable = canAffordCurrent();
+        status.setText(affordable ? "One Draw · " + amount + " ERT" :
+                "Not enough ERT for a Draw. Need " + drawShortfall() + " more ERT.");
         attempts.setText(count == null ? "" : "Today: " + count.optInt("remaining") +
                 " of " + count.optInt("limit") + " left");
         action.setText("Draw · " + amount + " ERT");
-        action.setEnabled(!busy && count != null && count.optInt("remaining") > 0);
+        action.setEnabled(!busy && affordable && count != null && count.optInt("remaining") > 0);
         JSONArray display = draw == null ? null : draw.optJSONArray("displayRewards");
         if (display != null) for (int i = 0; i < 4; i++) {
             JSONObject reward = display.optJSONObject(i);
-            if (reward != null && !reward.optBoolean("eligible", true)) slots[i].setAlpha(0.5f);
+            if (reward != null && (i == 2 ? reward.optBoolean("receivedToday", false) :
+                    !reward.optBoolean("eligible", true))) slots[i].setAlpha(0.5f);
             else slots[i].setAlpha(1f);
             if (i < 2 && reward != null) {
                 TextView caption = (TextView) slots[i].getChildAt(1);
@@ -352,9 +357,17 @@ public final class AlphaDrawPanel extends LinearLayout {
             return;
         }
         if (saved.state == RafflePendingDrawState.TERMINAL_REJECTED) {
-            status.setText("Draw unavailable: " + saved.terminalErrorCode);
+            if (current == null) {
+                action.setText("Retry balance check");
+                action.setEnabled(true);
+                return;
+            }
+            boolean insufficient = "INSUFFICIENT_ERT".equals(saved.terminalErrorCode);
+            status.setText(insufficient ? "Not enough ERT for a Draw. Need " +
+                    drawShortfall() + " more ERT." :
+                    "Draw unavailable: " + saved.terminalErrorCode);
             action.setText("Continue");
-            action.setEnabled(true);
+            action.setEnabled(!insufficient || canAffordCurrent());
             return;
         }
         try {
@@ -413,9 +426,30 @@ public final class AlphaDrawPanel extends LinearLayout {
                         fulfillment.optString("state")) ? " · delivery pending" : ""));
         JSONObject draw = current == null ? null : current.optJSONObject("draw");
         JSONObject count = draw == null ? null : draw.optJSONObject("attempts");
-        boolean available = count != null && count.optInt("remaining") > 0;
-        action.setText(available ? "Draw again" : "Daily limit reached");
+        boolean remaining = count != null && count.optInt("remaining") > 0;
+        boolean available = remaining && canAffordCurrent();
+        action.setText(!remaining ? "Daily limit reached" :
+                available ? "Draw again" : "Not enough ERT");
         action.setEnabled(available);
+        if (chosen == 2 && fulfillment != null &&
+                "CONFIRMED".equals(fulfillment.optString("state"))) slots[2].setAlpha(0.5f);
+    }
+
+    private boolean canAffordCurrent() {
+        try {
+            JSONObject draw = current.getJSONObject("draw");
+            return ErtValue.fromExact(draw.getString("availableErtExact")).compareTo(
+                    ErtValue.fromExact(draw.getJSONObject("cost").getString("amountExact"))) >= 0;
+        } catch (Exception ignored) { return false; }
+    }
+
+    private String drawShortfall() {
+        try {
+            JSONObject draw = current.getJSONObject("draw");
+            ErtValue balance = ErtValue.fromExact(draw.getString("availableErtExact"));
+            ErtValue cost = ErtValue.fromExact(draw.getJSONObject("cost").getString("amountExact"));
+            return cost.compareTo(balance) > 0 ? cost.subtract(balance).display() : "0.00";
+        } catch (Exception ignored) { return "--"; }
     }
 
     private void onAction() {
@@ -455,6 +489,14 @@ public final class AlphaDrawPanel extends LinearLayout {
                 }
                 if (saved == null) {
                     if (current == null) throw new IllegalStateException("Draw configuration unavailable");
+                    if (!canAffordCurrent()) {
+                        handler.post(() -> {
+                            if (request != generation || !sameSession(owner)) return;
+                            busy = false;
+                            renderCurrent();
+                        });
+                        return;
+                    }
                     String version = current.getJSONObject("draw").getString("configurationVersion");
                     pending.createSubmitting(owner.ownerId(), version,
                             UUID.randomUUID().toString(), System.currentTimeMillis());

@@ -59,6 +59,7 @@ public final class AlphaAuthApi {
                 path.equals("/raffle/v2/draw") || path.equals("/raffle/v2/history") ||
                 path.equals("/ring/equipment") ||
                 path.equals("/me/marketplace/listings") ||
+                path.equals("/me/marketplace/my-listing-mints") ||
                 path.matches("/me/marketplace/listing/[1-9A-HJ-NP-Za-km-z]{32,44}") ||
                 path.matches("/m2e/today\\?date=\\d{4}-\\d{2}-\\d{2}") ||
                 path.matches("/m2e/activity\\?from=\\d{4}-\\d{2}-\\d{2}&to=\\d{4}-\\d{2}-\\d{2}");
@@ -126,6 +127,7 @@ public final class AlphaAuthApi {
                 path.equals("/silver/opening/candidate-intent") ||
                 path.startsWith("/me/silver/points/") ||
                 path.equals("/me/marketplace/listings") ||
+                path.equals("/me/marketplace/my-listing-mints") ||
                 path.equals("/me/marketplace/review") ||
                 path.equals("/me/marketplace/refresh") ||
                 path.equals("/ring/equipment") ||

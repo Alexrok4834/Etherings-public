@@ -25,10 +25,13 @@ export function createWalletAssets({ wallet, silver, rpcUrl, mint, environment,
       if (inventory.status !== 200) return inventory;
       if (!Array.isArray(inventory.body.assets)) throw new Error('Invalid Silver inventory');
 
-      const sol = (await rpc.getBalance(address(walletAddress),
-        { commitment: 'finalized' }).send()).value;
-      const accounts = (await rpc.getTokenAccountsByOwner(address(walletAddress),
-        { mint: address(mint) }, { encoding: 'jsonParsed', commitment: 'finalized' }).send()).value;
+      const [solResult, accountsResult] = await Promise.all([
+        rpc.getBalance(address(walletAddress), { commitment: 'finalized' }).send(),
+        rpc.getTokenAccountsByOwner(address(walletAddress), { mint: address(mint) },
+          { encoding: 'jsonParsed', commitment: 'finalized' }).send(),
+      ]);
+      const sol = solResult.value;
+      const accounts = accountsResult.value;
       if (typeof sol !== 'bigint' || sol < 0n || !Array.isArray(accounts)) {
         throw new Error('Invalid wallet chain balance');
       }
