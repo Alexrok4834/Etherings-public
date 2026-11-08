@@ -13,19 +13,23 @@ public final class AlphaHomeEconomyClient {
     private AlphaHomeEconomyClient() { }
 
     public static AlphaHomeEconomySnapshot load(Context context) throws Exception {
+        return load(context, false);
+    }
+
+    public static AlphaHomeEconomySnapshot load(Context context, boolean displayOnly) throws Exception {
         AlphaSessionStore sessions = new AlphaSessionStore(context);
         AlphaSessionStore.VerifiedSession session = sessions.verified();
         if (session == null) throw new IllegalStateException("Verified Alpha session required");
         String date = LocalDate.now().toString();
         AlphaAuthApi api = new AlphaAuthApi(context, BuildConfig.ALPHA_DEV_API_BASE_URL);
-        AlphaAuthApi.Result profile = api.get("/m2e/today?date=" + date, session.token());
+        AlphaAuthApi.Result profile = api.get("/m2e/today?date=" + date + (displayOnly ? "&displayOnly=true" : ""), session.token());
         if (profile.status != 200) throw new IllegalStateException("Alpha economy unavailable");
         AlphaHomeEconomySnapshot snapshot = AlphaHomeEconomySnapshot.from(
                 profile.body, session.ownerId(), date);
         try {
             AlphaWallet wallet = new AlphaWallet(context);
-            if (wallet.exists()) {
-                AlphaAuthApi.Result assets = api.get("/wallet/assets", session.token());
+            if (!displayOnly && wallet.exists()) {
+                AlphaAuthApi.Result assets = api.get("/wallet/balances", session.token());
                 if (assets.status == 200) {
                     WalletAssetSnapshot verified = WalletAssetSnapshot.from(
                             assets.body.getString("cluster"), assets.body.getString("walletAddress"),

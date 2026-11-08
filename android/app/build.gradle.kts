@@ -126,8 +126,8 @@ androidComponents {
         }
     }
     onVariants(selector().withBuildType("alphaRelease")) { variant ->
-        val alphaVersionName = providers.gradleProperty("alphaReleaseVersionName").orNull ?: "1.3.0a"
-        val alphaVersionCode = (providers.gradleProperty("alphaReleaseVersionCode").orNull ?: "49")
+        val alphaVersionName = providers.gradleProperty("alphaReleaseVersionName").orNull ?: "1.3.1a"
+        val alphaVersionCode = (providers.gradleProperty("alphaReleaseVersionCode").orNull ?: "50")
             .toIntOrNull() ?: throw GradleException("alphaReleaseVersionCode must be an integer")
         require(alphaVersionName.isNotBlank() && alphaVersionCode > 17) {
             "Alpha release version must be named and newer than MVP versionCode 17"

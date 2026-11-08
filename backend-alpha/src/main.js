@@ -9,6 +9,8 @@ import { createWalletAssets } from './wallet-assets.js';
 import { createReadOnlyRpcRoute, createReadOnlyRpcScope, createScopedReadRpc,
   readRouteMode } from './read-only-rpc-route.js';
 import { createSilverFirstEntry } from './silver-first-entry.js';
+import { createInventoryDisplay } from './inventory-display.js';
+import { createVerifiedDisplayReader } from './verified-display-reader.js';
 import { createSilverChainReader } from './silver-chain.js';
 import { createSilverOpeningPreflight } from './silver-opening.js';
 import { createSilverOpeningCandidateIntent } from './silver-opening-candidate.js';
@@ -259,34 +261,47 @@ try {
       drawBoxIssuer = createDrawBoxIssuer({ pool, reader: silverChain,
         programId: silverProgram, chain: silverProgressionSigner });
   }
+  // Dedicated display readers: never install memoized methods on the reader
+  // used by equipment, settlement, signing, transfers or operation preflights.
+  const displaySilverFor = (url, rpc = createSolanaRpc(url)) => createSilverFirstEntry({
+    pool, chain: createVerifiedDisplayReader({ rpc,
+      createReader: observed => createSilverChainReader(url,
+        { rpc: observed, propagateTransientReadErrors: true }) }),
+    cluster: 'devnet', programId: silverProgram, collectionId: silverCollectionId,
+    walletEnvironment: process.env.ALPHA_WALLET_ENVIRONMENT,
+    openingProjectionEnabled: process.env.ALPHA_SILVER_OPENING_SUBMIT_ENABLED === 'true',
+    drawInventoryEnabled: drawFlag,
+    breedingInventoryEnabled: breedingFlag === 'true',
+  });
+  const displaySilver = silver ? displaySilverFor(process.env.ALPHA_ERU_PROOF_RPC_URL) : null;
   let assets = silver && process.env.ALPHA_ERU_PROOF_CLUSTER === 'devnet' &&
     process.env.ALPHA_COOPER_ERU_MINT_ADDRESS
-    ? createWalletAssets({ wallet, silver, rpcUrl: process.env.ALPHA_ERU_PROOF_RPC_URL,
+    ? createWalletAssets({ wallet, silver: displaySilver, rpcUrl: process.env.ALPHA_ERU_PROOF_RPC_URL,
       mint: process.env.ALPHA_COOPER_ERU_MINT_ADDRESS,
       environment: process.env.ALPHA_WALLET_ENVIRONMENT }) : null;
   const auth = createAuth({ pool, mailer, codeSecret: process.env.ALPHA_CODE_SECRET,
     onVerified: starterCooper.ensureForAccount });
   if (walletReadMode !== 'primary') {
     if (!assets || !alternativeSilverChain) throw new Error('Wallet read route unavailable');
-    const readSilver = chain => createSilverFirstEntry({ pool, chain,
-      cluster: 'devnet', programId: silverProgram, collectionId: silverCollectionId,
-      walletEnvironment: process.env.ALPHA_WALLET_ENVIRONMENT,
-      openingProjectionEnabled: process.env.ALPHA_SILVER_OPENING_SUBMIT_ENABLED === 'true',
-      drawInventoryEnabled: drawFlag,
-      breedingInventoryEnabled: breedingFlag === 'true' });
-    const primaryReadAssets = createWalletAssets({ wallet, silver: readSilver(primaryReadChain),
+    const primaryReadAssets = createWalletAssets({ wallet,
+      silver: displaySilverFor(process.env.ALPHA_ERU_PROOF_RPC_URL,
+        readRpc(process.env.ALPHA_ERU_PROOF_RPC_URL)),
       rpcUrl: process.env.ALPHA_ERU_PROOF_RPC_URL,
       rpc: readRpc(process.env.ALPHA_ERU_PROOF_RPC_URL),
       mint: process.env.ALPHA_COOPER_ERU_MINT_ADDRESS,
       environment: process.env.ALPHA_WALLET_ENVIRONMENT });
     const alternativeAssets = createWalletAssets({ wallet,
-      silver: readSilver(alternativeSilverChain),
+      silver: displaySilverFor(alternativeReadUrl, readRpc(alternativeReadUrl)),
       rpcUrl: alternativeReadUrl, mint: process.env.ALPHA_COOPER_ERU_MINT_ADDRESS,
       rpc: readRpc(alternativeReadUrl),
       environment: process.env.ALPHA_WALLET_ENVIRONMENT });
     assets = { read: createReadOnlyRpcRoute({
       primary: token => primaryReadAssets.read(token),
       alternative: token => alternativeAssets.read(token), mode: walletReadMode,
+      scope: readScope,
+    }), readBalances: createReadOnlyRpcRoute({
+      primary: token => primaryReadAssets.readBalances(token),
+      alternative: token => alternativeAssets.readBalances(token), mode: walletReadMode,
       scope: readScope,
     }) };
   }
@@ -498,7 +513,8 @@ try {
   }
   const server = createAlphaServer(
     auth,
-    wallet, eru, measureMethod(silver, 'inventory', 'silver-inventory'),
+    wallet, eru, measureMethod(silver ? createInventoryDisplay({ auth, wallet, silver: displaySilver,
+      marketplace }) : null, 'inventory', 'silver-inventory'),
     silverOpening, silverCandidateIntent, measureMethod(assets, 'read', 'wallet-assets'),
     starterCooper, undefined, measureMethod(equipment, 'current', 'ring-equipment'), m2eStepSync,
     m2eStepSync ? createM2eProfile({ pool, auth, config: m2eConfig,

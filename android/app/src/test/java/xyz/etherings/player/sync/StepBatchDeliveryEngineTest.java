@@ -78,6 +78,34 @@ public final class StepBatchDeliveryEngineTest {
         database.close();
     }
 
+    @Test public void displayFailureCannotRetryAnAcknowledgedBatch() {
+        StepOutboxBatchEntity batch = insertReady(0L);
+        transport.responses.add(response(batch, "ACCEPTED", "ACCEPTED", 100L, 1L));
+        int[] displayed = {0};
+        StepBatchDeliveryAccess access = new StepBatchDeliveryAccess() {
+            public Identity current() { return new Identity(ownerId, installationId); }
+            public JSONObject submitForOwner(String owner, String installation, StepBatchApi api,
+                    JSONObject payload) throws IOException, JSONException, ApiException,
+                    java.security.GeneralSecurityException,
+                    xyz.etherings.player.auth.SessionExpiredException {
+                return api.submitStepBatch(payload, "access-1");
+            }
+            public void invalidateOnSecurityError(Identity identity) { }
+            public void onAccepted(String owner, JSONObject receipt) {
+                assertEquals(ownerId, owner);
+                assertEquals(SyncBatchState.ACKED, dao.getBatch(batch.batchId).state);
+                displayed[0]++;
+                throw new IllegalStateException("Display unavailable");
+            }
+        };
+        StepBatchDeliveryEngine candidate = new StepBatchDeliveryEngine(dao, transport, access,
+                () -> nowMs, () -> false);
+        assertEquals(StepBatchDeliveryEngine.Outcome.COMPLETE, candidate.drain());
+        assertEquals(StepBatchDeliveryEngine.Outcome.COMPLETE, candidate.drain());
+        assertEquals(1, displayed[0]);
+        assertEquals(1, transport.payloads.size());
+    }
+
     @Test
     public void acceptedResponseAcknowledgesClaimedBatch() {
         StepOutboxBatchEntity batch = insertReady(0L);

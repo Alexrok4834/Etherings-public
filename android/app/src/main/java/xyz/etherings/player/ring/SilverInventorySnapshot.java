@@ -15,9 +15,20 @@ public final class SilverInventorySnapshot {
     private static final BigInteger MAX_U64 = new BigInteger("18446744073709551615");
     private static final BigInteger MAX_I64 = BigInteger.valueOf(Long.MAX_VALUE);
     private final List<Asset> assets;
+    private String serialized = "{\"assets\":[]}";
+    public JSONObject json() throws Exception { return new JSONObject(serialized); }
+    public final Set<String> listedMints;
+    public final boolean listingStatusAvailable;
 
     private SilverInventorySnapshot(List<Asset> assets) {
+        this(assets, Collections.emptySet(), false);
+    }
+
+    private SilverInventorySnapshot(List<Asset> assets, Set<String> listed,
+            boolean listingStatusAvailable) {
         this.assets = Collections.unmodifiableList(assets);
+        this.listedMints = Collections.unmodifiableSet(listed);
+        this.listingStatusAvailable = listingStatusAvailable;
     }
 
     public List<Asset> assets() { return assets; }
@@ -99,7 +110,20 @@ public final class SilverInventorySnapshot {
                 throw new IllegalArgumentException("Unknown Silver asset");
             }
         }
-        return new SilverInventorySnapshot(parsed);
+        Set<String> listed = new HashSet<>();
+        boolean listingAvailable = body.optBoolean("listingStatusAvailable", false);
+        if (listingAvailable) {
+            JSONArray listings = body.getJSONArray("listedMints");
+            if (listings.length() > 100) throw new IllegalArgumentException("Too many listings");
+            for (int i = 0; i < listings.length(); i++) {
+                String mint = listings.getString(i);
+                if (!mint.matches(ADDRESS) || !listed.add(mint))
+                    throw new IllegalArgumentException("Invalid listing identity");
+            }
+        }
+        SilverInventorySnapshot snapshot = new SilverInventorySnapshot(parsed, listed, listingAvailable);
+        snapshot.serialized = body.toString();
+        return snapshot;
     }
 
     private static int requiredNumber(JSONObject row, String key, int minimum, int maximum)

@@ -13,7 +13,8 @@ function validDate(value) {
 export function createM2eProfile({ pool, auth, resolveEligibleRingCount,
   config = createM2eBalanceConfig({}) }) {
   return { async today(token, query) {
-    if (query.size !== 1 || !validDate(query.get('date')))
+    const displayOnly = query.get('displayOnly') === 'true';
+    if (query.size !== (displayOnly ? 2 : 1) || !validDate(query.get('date')))
       return { status: 400, body: { code: 'INVALID_DATE' } };
     const owner = await auth.me(token);
     if (owner.status !== 200) return owner;
@@ -27,7 +28,7 @@ export function createM2eProfile({ pool, auth, resolveEligibleRingCount,
     if (!row) return { status: 401, body: { message: 'Unauthorized.' } };
     const exact = canonicalErt(row.ert_balance);
     let dailyStepCap = null;
-    try {
+    if (!displayOnly) try {
       const ringCount = await resolveEligibleRingCount(owner.body.id);
       const capConfig = row.step_cap === null ? config : { ...config,
         baseSteps: row.base_steps, extraStepsPerRing: row.extra_steps_per_ring };

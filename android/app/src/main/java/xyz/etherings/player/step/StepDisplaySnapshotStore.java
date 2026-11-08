@@ -17,6 +17,9 @@ public final class StepDisplaySnapshotStore {
     private static final String LAST_SENSOR_UPDATE_AT_MS = "last_sensor_update_at_ms";
     private static final String DAILY_DATE = "daily_date";
     private static final String SNAPSHOT_REVISION = "snapshot_revision";
+    private static final Object CAP_LOCK = new Object();
+    private static final String CAP_CHECKED_AT = "cap_checked_at";
+    private static final String CAP_RECEIPT_AT = "cap_receipt_at";
     private static final String CAP_OWNER_ID = "cap_owner_id";
     private static final String SERVER_DAILY_STEP_CAP = "server_daily_step_cap";
     private static final String SERVER_DAILY_STEP_CAP_DATE = "server_daily_step_cap_date";
@@ -92,17 +95,41 @@ public final class StepDisplaySnapshotStore {
         if (ownerId == null || ownerId.trim().isEmpty()) {
             throw new IllegalArgumentException("ownerId is required");
         }
-        SharedPreferences.Editor editor = preferences.edit().putString(CAP_OWNER_ID, ownerId);
-        if (date == null) editor.remove(SERVER_DAILY_STEP_CAP_DATE);
-        else editor.putString(SERVER_DAILY_STEP_CAP_DATE, date);
-        if (dailyStepCap == null) {
-            editor.remove(SERVER_DAILY_STEP_CAP).apply();
-            return;
+        synchronized (CAP_LOCK) {
+            SharedPreferences.Editor editor = preferences.edit().putString(CAP_OWNER_ID, ownerId)
+                    .putLong(CAP_CHECKED_AT, System.currentTimeMillis());
+            if (date == null) editor.remove(SERVER_DAILY_STEP_CAP_DATE);
+            else editor.putString(SERVER_DAILY_STEP_CAP_DATE, date);
+            if (dailyStepCap == null) {
+                editor.remove(SERVER_DAILY_STEP_CAP).apply();
+                return;
+            }
+            if (dailyStepCap <= 0) {
+                throw new IllegalArgumentException("dailyStepCap must be positive");
+            }
+            editor.putInt(SERVER_DAILY_STEP_CAP, dailyStepCap).apply();
         }
-        if (dailyStepCap <= 0) {
-            throw new IllegalArgumentException("dailyStepCap must be positive");
+    }
+
+    public void saveAcceptedStepCap(String ownerId, org.json.JSONObject response) {
+        synchronized (CAP_LOCK) {
+            try {
+                String date = response.getString("accountingDate");
+                Object cap = response.get("dailyStepCap");
+                long at = java.time.Instant.parse(response.getString("processedAt")).toEpochMilli();
+                String status = response.getString("status");
+                if (!("ACCEPTED".equals(status) || "PARTIALLY_ACCEPTED".equals(status)) ||
+                        !LocalDate.now().toString().equals(date) || !(cap instanceof Integer) ||
+                        (Integer) cap <= 0 || at <= 0) return;
+                boolean same = ownerId.equals(preferences.getString(CAP_OWNER_ID, null));
+                if (same && at <= Math.max(preferences.getLong(CAP_CHECKED_AT, 0),
+                        preferences.getLong(CAP_RECEIPT_AT, 0))) return;
+                preferences.edit().putString(CAP_OWNER_ID, ownerId)
+                        .putString(SERVER_DAILY_STEP_CAP_DATE, date)
+                        .putInt(SERVER_DAILY_STEP_CAP, (Integer) cap)
+                        .putLong(CAP_RECEIPT_AT, at).putLong(CAP_CHECKED_AT, 0).apply();
+            } catch (Exception ignored) { /* An invalid display receipt changes no state. */ }
         }
-        editor.putInt(SERVER_DAILY_STEP_CAP, dailyStepCap).apply();
     }
 
     public Integer serverDailyStepCap(String ownerId) {

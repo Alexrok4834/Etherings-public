@@ -2,6 +2,18 @@
 
 These are the versions players could download. The separate **1.1.1a** build was tested on devices but was not released to everyone.
 
+## 1.3.1a — 8 November 2026
+
+- Home, Rings and Wallet remember the last checked contents, so restarting the app does not always mean staring at an empty screen. A message explains when current information is still being checked.
+- Buttons for item actions remain unavailable until that check finishes.
+- Returning to a screen does less repeated work when the contents have not changed. Changes made outside the app are still checked.
+- Home needs less wallet information to display your balance, and screens opened together can share an inventory check.
+- After steps are accepted, the app reuses the information returned with that result instead of requesting it again. Step acceptance and ERT calculation rules are unchanged.
+- Saved screen data is kept separate for each account and cleared when signing out or when an operation's result is uncertain.
+- Update notices remain enabled on the sign-in and game screens. Compatible earlier Alpha builds can update directly to this version without clearing their app data.
+
+On the Samsung A8 test device, repeat Home and Rings checks completed in about 4.5–6.4 seconds, and repeat Wallet in about 6.4 seconds. The same items and balances were shown before and after the server update. A first full check can still take longer; these are individual observations, not a guarantee for every device or connection. An older-version update dialog and a new walk were not physically checked during this release. No purchase, transfer, Box opening or other paid action was submitted.
+
 ## 1.3.0a — 4 November 2026
 
 - Registration asks you to repeat your password and points out a mismatch before creating an account.

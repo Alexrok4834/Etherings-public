@@ -27,9 +27,15 @@ public final class AlphaSilverArtwork {
     private AlphaSilverArtwork() { }
 
     public static Map<String, Bitmap> load(Context context, SilverInventorySnapshot snapshot) {
+        return load(context, snapshot, true);
+    }
+    public static Map<String, Bitmap> loadCached(Context context, SilverInventorySnapshot snapshot) {
+        return load(context, snapshot, false);
+    }
+    private static Map<String, Bitmap> load(Context context, SilverInventorySnapshot snapshot, boolean network) {
         Map<String, Bitmap> artwork = new HashMap<>();
         for (SilverInventorySnapshot.Asset asset : snapshot.assets()) {
-            Bitmap bitmap = loadOne(context, asset.uri, asset.contentHash);
+            Bitmap bitmap = loadOne(context, asset.uri, asset.contentHash, network);
             if (bitmap != null) artwork.put(asset.mint, bitmap);
         }
         return artwork;
@@ -38,6 +44,9 @@ public final class AlphaSilverArtwork {
     // Draw Box artwork uses the same backend-supplied canonical URI/hash and
     // verified cache as inventory. No APK-side Box identity is introduced.
     public static Bitmap loadOne(Context context, String uri, String hash) {
+        return loadOne(context, uri, hash, true);
+    }
+    private static Bitmap loadOne(Context context, String uri, String hash, boolean network) {
         if (!SilverArtworkVerifier.validUri(uri) || !SilverArtworkVerifier.validHash(hash))
             return null;
         String key = uri + "\n" + hash;
@@ -49,6 +58,7 @@ public final class AlphaSilverArtwork {
         try {
             byte[] bytes = cache.read(uri, hash);
             if (bytes == null) {
+                if (!network) return null;
                 bytes = fetchAndStore(cache, uri, hash);
                 if (bytes == null) return null;
             }

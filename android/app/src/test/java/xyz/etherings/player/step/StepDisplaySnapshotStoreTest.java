@@ -51,6 +51,28 @@ public final class StepDisplaySnapshotStoreTest {
         assertEquals(0L, store.snapshot(secondOwner).dailySteps());
     }
 
+    @Test public void acceptedReceiptUpdatesDisplayButOldOrInvalidReceiptCannotReplaceIt() throws Exception {
+        String day = LocalDate.now().toString();
+        long now = System.currentTimeMillis();
+        org.json.JSONObject receipt = new org.json.JSONObject().put("status", "ACCEPTED")
+                .put("accountingDate", day).put("dailyStepCap", 6000)
+                .put("processedAt", java.time.Instant.ofEpochMilli(now - 1000).toString());
+        store.saveAcceptedStepCap("a", receipt);
+        assertEquals(Integer.valueOf(6000), store.serverDailyStepCap("a"));
+        assertEquals(null, store.serverDailyStepCap("b"));
+        receipt.put("dailyStepCap", 5000)
+                .put("processedAt", java.time.Instant.ofEpochMilli(now - 2000).toString());
+        store.saveAcceptedStepCap("a", receipt);
+        assertEquals(Integer.valueOf(6000), store.serverDailyStepCap("a"));
+        receipt.put("accountingDate", LocalDate.now().minusDays(1).toString());
+        store.saveAcceptedStepCap("a", receipt);
+        assertEquals(Integer.valueOf(6000), store.serverDailyStepCap("a"));
+        store.saveServerDailyStepCap("a", day, null);
+        receipt.put("accountingDate", day);
+        store.saveAcceptedStepCap("a", receipt);
+        assertEquals(null, store.serverDailyStepCap("a"));
+    }
+
     @Test
     public void notifiesOncePerSnapshotAndStopsWithActivityLifecycle() {
         AtomicInteger notifications = new AtomicInteger();

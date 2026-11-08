@@ -201,10 +201,12 @@ export function createAlphaServer(auth, wallet, eru = null, silver = null,
         result = await wallet.current(token);
       } else if (request.method === 'GET' && path === '/wallet/assets' && walletAssets) {
         result = await walletAssets.read(token);
+      } else if (request.method === 'GET' && path === '/wallet/balances' && walletAssets) {
+        result = await walletAssets.readBalances(token);
       } else if (request.method === 'GET' && path === '/eru/history' && eru) {
         result = await eru.history(token);
       } else if (request.method === 'GET' && path === '/silver/inventory' && silver) {
-        result = await silver.inventory(token);
+        result = await silver.inventory(token, url.searchParams.get('listings') === 'true');
       } else if (request.method === 'GET' && path === '/starter/inventory' && starterCooper) {
         result = await starterCooper.inventory(token);
       } else if (request.method === 'GET' && path === '/ring/equipment' && equipment) {

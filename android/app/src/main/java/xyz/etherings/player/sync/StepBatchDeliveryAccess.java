@@ -18,6 +18,9 @@ public interface StepBatchDeliveryAccess {
 
     void invalidateOnSecurityError(Identity identity);
 
+    /** Display only, after the accepted receipt has been persisted. */
+    default void onAccepted(String ownerId, JSONObject response) { }
+
     final class Identity {
         private final String ownerId;
         private final String installationId;

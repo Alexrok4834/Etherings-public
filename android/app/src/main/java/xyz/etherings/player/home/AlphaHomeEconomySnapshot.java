@@ -48,6 +48,12 @@ public final class AlphaHomeEconomySnapshot {
                 EruValue.fromExact(exactEru).display(), dailyStepCap);
     }
 
+    public AlphaHomeEconomySnapshot withDisplayContext(AlphaHomeEconomySnapshot prior, Integer cap) {
+        String eru = prior != null && ownerId.equals(prior.ownerId) && date.equals(prior.date)
+                ? prior.eruDisplay : null;
+        return new AlphaHomeEconomySnapshot(ownerId, date, ertDisplay, eru, cap);
+    }
+
     public String ownerId() { return ownerId; }
     public String date() { return date; }
     public String ertDisplay() { return ertDisplay; }

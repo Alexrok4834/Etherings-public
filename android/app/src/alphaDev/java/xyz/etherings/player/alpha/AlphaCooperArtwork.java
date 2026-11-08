@@ -44,13 +44,21 @@ public final class AlphaCooperArtwork {
         return load(context, rings, false);
     }
 
+    public static Map<String, Bitmap> loadCached(Context context, List<CopperRing> rings, boolean trim) {
+        return load(context, rings, trim, false);
+    }
+
     private static Map<String, Bitmap> load(Context context, List<CopperRing> rings, boolean trim) {
+        return load(context, rings, trim, true);
+    }
+
+    private static Map<String, Bitmap> load(Context context, List<CopperRing> rings, boolean trim, boolean network) {
         Map<String, Bitmap> artwork = new HashMap<>();
         try {
             AlphaSessionStore sessions = new AlphaSessionStore(context);
             String token = sessions.load();
             if (token == null) return artwork;
-            JSONObject images = catalog(context, sessions, token, rings).getJSONObject("images");
+            JSONObject images = catalog(context, sessions, token, rings, network).getJSONObject("images");
             for (CopperRing ring : rings) {
                 String code = ring.visualVariantCode();
                 if (artwork.containsKey(code) ||
@@ -62,7 +70,7 @@ public final class AlphaCooperArtwork {
                 String hash = entry.getString("sha256");
                 if (!path.equals("/media/cooper/copper-visual-v1/" + code + ".png") ||
                         !hash.matches("[a-f0-9]{64}")) continue;
-                Bitmap image = loadOne(context, path, hash, trim);
+                Bitmap image = loadOne(context, path, hash, trim, network);
                 if (image != null) artwork.put(code, image);
             }
         } catch (Exception ignored) { }
@@ -70,7 +78,7 @@ public final class AlphaCooperArtwork {
     }
 
     private static JSONObject catalog(Context context, AlphaSessionStore sessions,
-            String token, List<CopperRing> rings) throws Exception {
+            String token, List<CopperRing> rings, boolean network) throws Exception {
         File directory = new File(context.getFilesDir(), "cooper-media");
         File file = new File(directory, "catalog-v1.json");
         JSONObject cached = readCatalog(file, rings);
@@ -80,6 +88,7 @@ public final class AlphaCooperArtwork {
             storeCatalog(file, cached);
             return cached;
         }
+        if (!network) throw new IllegalStateException("No cached artwork catalog");
         AlphaAuthApi.Result response = new AlphaAuthApi(context, BuildConfig.ALPHA_DEV_API_BASE_URL)
                 .get("/media/cooper/catalog", token);
         if (response.status != 200 || !token.equals(sessions.load()) ||
@@ -130,7 +139,7 @@ public final class AlphaCooperArtwork {
         } catch (Exception ignored) { return false; }
     }
 
-    private static Bitmap loadOne(Context context, String path, String hash, boolean trim) {
+    private static Bitmap loadOne(Context context, String path, String hash, boolean trim, boolean network) {
         String key = path + "\n" + hash + "\n" + trim;
         Bitmap decoded = DECODED.get(key);
         if (decoded != null && !decoded.isRecycled()) return decoded;
@@ -144,6 +153,7 @@ public final class AlphaCooperArtwork {
                 if (bytes != null) storePng(file, bytes);
             }
             if (bytes == null) {
+                if (!network) return null;
                 HttpsURLConnection connection = (HttpsURLConnection) new URL(
                         BuildConfig.ALPHA_DEV_API_BASE_URL + path).openConnection();
                 try {

@@ -19,6 +19,8 @@ public final class AlphaStepBatchAccess implements StepBatchDeliveryAccess {
     private final String installationId;
     private final AlphaSessionStore store;
     private final AlphaAuthApi renewalApi;
+    private xyz.etherings.player.step.StepDisplaySnapshotStore display;
+    private String submittedLineage;
 
     public AlphaStepBatchAccess(AlphaSessionStore store, String installationId) {
         this(store::verified, installationId, store, null);
@@ -27,6 +29,7 @@ public final class AlphaStepBatchAccess implements StepBatchDeliveryAccess {
     public AlphaStepBatchAccess(AlphaSessionStore store, String installationId,
                                 Context context, String baseUrl) {
         this(store::verified, installationId, store, new AlphaAuthApi(context, baseUrl));
+        display = new xyz.etherings.player.step.StepDisplaySnapshotStore(context);
     }
 
     AlphaStepBatchAccess(Supplier<AlphaSessionStore.VerifiedSession> sessions, String installationId) {
@@ -54,6 +57,7 @@ public final class AlphaStepBatchAccess implements StepBatchDeliveryAccess {
                 || !installationId.equals(batchInstallationId)) {
             throw new SessionExpiredException("Alpha session owner or installation changed");
         }
+        submittedLineage = session.lineage();
         AlphaSessionIdentity initial = store == null ? null : store.current();
         String accessToken = initial != null && session.ownerId().equals(initial.accountId)
                 && session.lineage().equals(initial.lineage) ? initial.token : session.token();
@@ -84,6 +88,13 @@ public final class AlphaStepBatchAccess implements StepBatchDeliveryAccess {
             }
             throw error;
         }
+    }
+
+    @Override public void onAccepted(String ownerId, JSONObject response) {
+        AlphaSessionStore.VerifiedSession current = sessions.get();
+        if (display != null && current != null && ownerId.equals(current.ownerId())
+                && current.lineage().equals(submittedLineage))
+            display.saveAcceptedStepCap(ownerId, response);
     }
 
     @Override public void invalidateOnSecurityError(Identity identity) {

@@ -11,8 +11,7 @@ export function createWalletAssets({ wallet, silver, rpcUrl, mint, environment,
   }
   address(mint);
 
-  return {
-    async read(token) {
+  async function read(token, includeSilver) {
       const binding = await wallet.current(token);
       if (binding.status !== 200) return binding;
       const walletAddress = binding.body.walletAddress;
@@ -21,9 +20,12 @@ export function createWalletAssets({ wallet, silver, rpcUrl, mint, environment,
       if (await rpc.getGenesisHash().send() !== DEVNET_GENESIS) {
         throw new Error('Wallet asset reader cluster mismatch');
       }
-      const inventory = await silver.inventory(token);
-      if (inventory.status !== 200) return inventory;
-      if (!Array.isArray(inventory.body.assets)) throw new Error('Invalid Silver inventory');
+      let inventory;
+      if (includeSilver) {
+        inventory = await silver.inventory(token);
+        if (inventory.status !== 200) return inventory;
+        if (!Array.isArray(inventory.body.assets)) throw new Error('Invalid Silver inventory');
+      }
 
       const [solResult, accountsResult] = await Promise.all([
         rpc.getBalance(address(walletAddress), { commitment: 'finalized' }).send(),
@@ -49,8 +51,12 @@ export function createWalletAssets({ wallet, silver, rpcUrl, mint, environment,
       }
       return { status: 200, body: {
         cluster: 'devnet', walletAddress, solLamports: sol.toString(),
-        eruBaseUnits: eru.toString(), eruMint: mint, silver: inventory.body.assets,
+        eruBaseUnits: eru.toString(), eruMint: mint,
+        ...(includeSilver ? { silver: inventory.body.assets } : {}),
       } };
-    },
+  }
+  return {
+    read: token => read(token, true),
+    readBalances: token => read(token, false),
   };
 }

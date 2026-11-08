@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import { createHash, randomBytes } from 'node:crypto';
 import { createServer } from 'node:http';
 import { test } from 'node:test';
-import { address, getProgramDerivedAddress } from '@solana/kit';
+import { address, createSolanaRpc, getProgramDerivedAddress } from '@solana/kit';
 import { getExtraAccountMetasEncoder, getMintEncoder,
   TOKEN_2022_PROGRAM_ADDRESS } from '@solana-program/token-2022';
 import bs58 from 'bs58';
 import { createSilverChainReader } from '../src/silver-chain.js';
+import { createVerifiedDisplayReader } from '../src/verified-display-reader.js';
 
 const b58 = () => bs58.encode(randomBytes(32));
 const derive = (programId, seeds) => getProgramDerivedAddress({
@@ -367,6 +368,8 @@ test('consumed Box projects only a canonical finalized Ring held by the requeste
     [designAddress, { owner: programId, data: design }],
   ]);
   let tokenOwner = wallet;
+  const tokenAccount = b58();
+  const rpcCalls = [];
   let ownerInventoryReads = 0;
   let genesisReads = 0;
   const server = createServer(async (request, response) => {
@@ -375,26 +378,30 @@ test('consumed Box projects only a canonical finalized Ring held by the requeste
     const { id, method, params } = JSON.parse(Buffer.concat(parts).toString());
     let result;
     if (method === 'getGenesisHash') {
+      rpcCalls.push(method);
       genesisReads++;
       result = 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG';
     }
     else if (method === 'getMultipleAccounts') {
+      rpcCalls.push(method);
       assert.equal(params[1].encoding, 'base64');
       assert.equal(params[1].commitment ?? 'finalized', 'finalized');
       result = { context: { slot: 200 }, value: params[0].map(key => {
         const account = accounts.get(key);
-        return account && { lamports: 1000000, executable: false, rentEpoch: 0,
+        return account ? { lamports: 1000000, executable: false, rentEpoch: 0,
           space: account.data.length, owner: account.owner,
-          data: [account.data.toString('base64'), 'base64'] };
+          data: [account.data.toString('base64'), 'base64'] } : null;
       }) };
     } else if (method === 'getAccountInfo') {
+      rpcCalls.push(method);
       const account = accounts.get(params[0]);
-      result = { context: { slot: 200 }, value: account && { lamports: 1000000,
+      result = { context: { slot: 200 }, value: account ? { lamports: 1000000,
         executable: false, rentEpoch: 0, space: account.data.length,
-        owner: account.owner, data: [account.data.toString('base64'), 'base64'] } };
+        owner: account.owner, data: [account.data.toString('base64'), 'base64'] } : null };
     } else if (method === 'getTokenAccountsByOwner') {
+      rpcCalls.push(method);
       if (params[1]?.programId === TOKEN_2022_PROGRAM_ADDRESS) ownerInventoryReads++;
-      result = { context: { slot: 200 }, value: params[0] === tokenOwner ? [{ pubkey: b58(),
+      result = { context: { slot: 200 }, value: params[0] === tokenOwner ? [{ pubkey: tokenAccount,
         account: { owner: TOKEN_2022_PROGRAM_ADDRESS, lamports: 1000000, executable: false,
           rentEpoch: 0, space: 200, data: { program: 'spl-token-2022', parsed: { info: {
             mint: ringMint, owner: tokenOwner, tokenAmount: { amount: '1' },
@@ -406,7 +413,8 @@ test('consumed Box projects only a canonical finalized Ring held by the requeste
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   try {
     const url = `http://127.0.0.1:${server.address().port}`;
-    const reader = createSilverChainReader(url);
+    const reader = createVerifiedDisplayReader({ rpc: createSolanaRpc(url),
+      createReader: rpc => createSilverChainReader(url, { rpc }) });
     const input = { programId, cluster: 'devnet', issuanceId, walletAddress: wallet };
     const valid = await reader.readRingForIssuance(input);
     assert.equal(valid?.mintAddress, ringMint);
@@ -428,6 +436,16 @@ test('consumed Box projects only a canonical finalized Ring held by the requeste
     assert.deepEqual(rings, [valid]);
     assert.equal(ownerInventoryReads - beforeInventory, 1);
     assert.equal(genesisReads - beforeGenesis, 1);
+    const inventoryInput = { programId, cluster: 'devnet', walletAddress: wallet };
+    rpcCalls.length = 0;
+    const uncached = await createSilverChainReader(url).listOwnedAssets(inventoryInput);
+    const fullCalls = rpcCalls.length;
+    rpcCalls.length = 0;
+    assert.deepEqual(await reader.listOwnedAssets(inventoryInput), uncached);
+    assert.equal(rpcCalls.filter(method => method === 'getAccountInfo').length, 0);
+    assert.equal(rpcCalls.filter(method => method === 'getMultipleAccounts').length, 1);
+    assert.ok(rpcCalls.length < fullCalls);
+    console.log(`Verified display fixture: ${fullCalls} -> ${rpcCalls.length} RPC calls; same assets`);
     accounts.get(metas).data = marketExtra;
     assert.equal((await reader.readRingForIssuance(input))?.mintAddress, ringMint);
     accounts.get(metas).data = extra;

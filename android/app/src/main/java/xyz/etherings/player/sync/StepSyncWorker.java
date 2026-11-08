@@ -107,8 +107,6 @@ public final class StepSyncWorker extends Worker {
         StepBatchDeliveryEngine.Outcome outcome = engine.drain();
         if (outcome == StepBatchDeliveryEngine.Outcome.AUTH_REQUIRED) {
             statusStore.markAttempt(verified.ownerId(), true, System.currentTimeMillis());
-        } else {
-            refreshAlphaStepCap(context, sessions, verified);
         }
         new RoomSyncStatusPublisher(database, statusStore).publish(verified.ownerId());
         if (outcome == StepBatchDeliveryEngine.Outcome.MORE_PENDING) {
@@ -119,26 +117,4 @@ public final class StepSyncWorker extends Worker {
                 ? Result.retry() : Result.success();
     }
 
-    private static void refreshAlphaStepCap(Context context, AlphaSessionStore sessions,
-            AlphaSessionStore.VerifiedSession verified) {
-        String date = LocalDate.now().toString();
-        Integer cap = null;
-        try {
-            AlphaAuthApi.Result response = new AlphaAuthApi(context, BuildConfig.ALPHA_DEV_API_BASE_URL)
-                    .get("/m2e/today?date=" + date, verified.token());
-            if (response.status != 200) throw new IllegalStateException("Alpha cap unavailable");
-            JSONObject body = response.body;
-            Object raw = body.opt("dailyStepCap");
-            if (date.equals(body.optString("date")) && raw instanceof Integer
-                    && (Integer) raw > 0) cap = (Integer) raw;
-        } catch (Exception ignored) {
-            // UNKNOWN/offline capacity cannot be presented as current.
-        }
-        AlphaSessionStore.VerifiedSession current = sessions.verified();
-        if (current != null && verified.ownerId().equals(current.ownerId())
-                && verified.lineage().equals(current.lineage())
-                && date.equals(LocalDate.now().toString()))
-            new StepDisplaySnapshotStore(context).saveServerDailyStepCap(
-                    current.ownerId(), date, cap);
-    }
 }

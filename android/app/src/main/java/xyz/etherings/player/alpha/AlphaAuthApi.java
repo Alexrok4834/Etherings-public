@@ -15,15 +15,25 @@ public final class AlphaAuthApi {
     private static final Object RENEW_LOCK = new Object();
     private final String baseUrl;
     private final AlphaSessionStore sessions;
+    private final AlphaVisualSnapshotStore previews;
 
     public AlphaAuthApi(Context context, String baseUrl) {
         AlphaEndpointPolicy.requireApi(baseUrl, BuildConfig.ALPHA_DEV_API_BASE_URL);
         this.baseUrl = baseUrl;
         this.sessions = new AlphaSessionStore(context);
+        this.previews = new AlphaVisualSnapshotStore(context);
     }
 
     public Result post(String path, JSONObject body, String token) throws Exception {
-        return request("POST", path, body, token);
+        // Normal Rings loading calls the idempotent starter claim; failures still invalidate.
+        boolean invalidate = !path.equals("/starter/claim");
+        if (invalidate) previews.clear();
+        try {
+            Result result = request("POST", path, body, token);
+            if (!invalidate && result.status != 200) previews.clear();
+            return result;
+        } catch (Exception error) { previews.clear(); throw error; }
+        finally { if (invalidate) previews.clear(); }
     }
 
     public Result get(String path, String token) throws Exception {
@@ -53,7 +63,8 @@ public final class AlphaAuthApi {
 
     static boolean isWalletGet(String path) {
         return path.equals("/wallet") || path.equals("/wallet/assets") ||
-                path.equals("/eru/history") || path.equals("/silver/inventory") ||
+                path.equals("/wallet/balances") ||
+                path.equals("/eru/history") || (path.equals("/silver/inventory") || path.equals("/silver/inventory?listings=true")) ||
                 path.equals("/starter/inventory") ||
                 path.equals("/media/cooper/catalog") ||
                 path.equals("/raffle/v2/draw") || path.equals("/raffle/v2/history") ||
@@ -61,7 +72,7 @@ public final class AlphaAuthApi {
                 path.equals("/me/marketplace/listings") ||
                 path.equals("/me/marketplace/my-listing-mints") ||
                 path.matches("/me/marketplace/listing/[1-9A-HJ-NP-Za-km-z]{32,44}") ||
-                path.matches("/m2e/today\\?date=\\d{4}-\\d{2}-\\d{2}") ||
+                path.matches("/m2e/today\\?date=\\d{4}-\\d{2}-\\d{2}(?:&displayOnly=true)?") ||
                 path.matches("/m2e/activity\\?from=\\d{4}-\\d{2}-\\d{2}&to=\\d{4}-\\d{2}-\\d{2}");
     }
 
@@ -131,7 +142,8 @@ public final class AlphaAuthApi {
                 path.equals("/me/marketplace/review") ||
                 path.equals("/me/marketplace/refresh") ||
                 path.equals("/ring/equipment") ||
-                path.equals("/silver/inventory") || path.equals("/wallet/assets") ||
+                (path.equals("/silver/inventory") || path.equals("/silver/inventory?listings=true")) || path.equals("/wallet/assets") ||
+                path.equals("/wallet/balances") ||
                 path.startsWith("/m2e/today?date=") ? 35_000 : 8_000));
         connection.setInstanceFollowRedirects(false);
         connection.setUseCaches(false);

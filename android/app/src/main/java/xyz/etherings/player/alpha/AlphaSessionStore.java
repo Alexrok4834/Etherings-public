@@ -21,9 +21,11 @@ public final class AlphaSessionStore {
     private static final String ALIAS = "etherings-main-alpha-dev-session-v1";
     private static final Object FILE_LOCK = new Object();
     private final File file;
+    private final AlphaVisualSnapshotStore previews;
 
     public AlphaSessionStore(Context context) {
         file = new File(context.getNoBackupFilesDir(), "alpha-dev-session-v1");
+        previews = new AlphaVisualSnapshotStore(context);
     }
 
     private SecretKey key() throws Exception {
@@ -41,7 +43,7 @@ public final class AlphaSessionStore {
     }
 
     void save(String token) throws Exception {
-        synchronized (FILE_LOCK) { write(AlphaSessionIdentity.legacy(token)); }
+        synchronized (FILE_LOCK) { previews.clear(); write(AlphaSessionIdentity.legacy(token)); }
     }
 
     void saveVerified(String token, String accountId) throws Exception {
@@ -182,6 +184,7 @@ public final class AlphaSessionStore {
 
     void clear() {
         synchronized (FILE_LOCK) {
+            previews.clear();
             if (file.exists()) file.delete();
             File temporary = new File(file.getParentFile(), file.getName() + ".new");
             if (temporary.exists()) temporary.delete();

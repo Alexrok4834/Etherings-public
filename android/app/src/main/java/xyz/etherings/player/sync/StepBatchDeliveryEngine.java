@@ -206,6 +206,8 @@ public final class StepBatchDeliveryEngine {
                     response.optLong("acceptedStepDelta"),
                     responseErt(response)
             );
+            try { access.onAccepted(batch.ownerId, response); }
+            catch (RuntimeException ignored) { /* Display cannot retry a settled batch. */ }
             return Outcome.COMPLETE;
         }
         if ("REJECTED".equals(status) && hasTerminalNumbers(response)) {

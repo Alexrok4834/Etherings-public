@@ -3,6 +3,26 @@ import { test } from 'node:test';
 import { createM2eProfile } from '../src/m2e-profile.js';
 import { createAlphaServer } from '../src/server.js';
 
+test('display-only balance read authenticates and never resolves chain capacity', async () => {
+  let reads = 0, chainReads = 0;
+  const profile = createM2eProfile({
+    auth: { async me(token) { return token === 'valid'
+      ? { status: 200, body: { id: 'a' } } : { status: 401 }; } },
+    pool: { async query() { reads++; return { rows: [{ ert_balance: '12.5', step_cap: 5000 }] }; } },
+    resolveEligibleRingCount: async () => { chainReads++; throw new Error('must not read RPC'); },
+  });
+  const query = new URLSearchParams('date=2026-11-05&displayOnly=true');
+  assert.deepEqual(await profile.today('valid', query), { status: 200, body: {
+    date: '2026-11-05', ertBalanceExact: '12.5', ertBalanceDisplay: '12.50', dailyStepCap: null,
+  } });
+  assert.equal((await profile.today('denied', query)).status, 401);
+  assert.equal(reads, 1);
+  assert.equal(chainReads, 0);
+  for (const value of ['date=2026-11-05&displayOnly=false',
+    'date=2026-11-05&displayOnly=true&extra=true'])
+    assert.equal((await profile.today('valid', new URLSearchParams(value))).status, 400);
+});
+
 test('M2E profile reads authenticated balance and live capacity with frozen day rules', async () => {
   const calls = [];
   const pool = { async query(sql, args) {

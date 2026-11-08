@@ -920,8 +920,29 @@ public final class AlphaWalletActivity extends Activity {
         int request = generation;
         String token = sessions.load();
         String expectedAddress = localAddress;
+        AlphaSessionStore.VerifiedSession previewSession = sessions.verified();
+        AlphaVisualSnapshotStore previews = new AlphaVisualSnapshotStore(this);
+        long previewRevision = previews.revision();
         io.execute(() -> {
             try {
+                try { if (previewSession != null && submissions.load(accountId) == null) {
+                    JSONObject saved = previews.load(previewSession.ownerId(), previewSession.lineage(), "wallet");
+                    if (saved != null && expectedAddress.equals(saved.optString("address"))) {
+                        String savedSol = saved.getString("sol"), savedEru = saved.getString("eru");
+                        int savedBoxes = saved.getInt("boxes"), savedRings = saved.getInt("rings");
+                        if (savedSol.matches("[0-9]+(?:\\.[0-9]+)?") &&
+                                savedEru.matches("[0-9]+(?:\\.[0-9]+)?") &&
+                                savedBoxes >= 0 && savedRings >= 0 && savedBoxes + savedRings <= 100)
+                            runOnUiThread(() -> {
+                                if (isFinishing() || isDestroyed() || request != generation ||
+                                        previews.revision() != previewRevision || !token.equals(sessions.load())) return;
+                                sol.setText(savedSol); eru.setText(savedEru);
+                                silver.setText(savedBoxes + " Box  |  " + savedRings + " Ring");
+                                send.setEnabled(false);
+                                sendState.setText("Checking current balances and ownership...");
+                            });
+                    }
+                } } catch (Exception ignored) { previews.clear(); }
                 AlphaAuthApi.Result result = api.get("/wallet/assets", token);
                 if (result.status != 200) throw new IllegalStateException("Asset reader unavailable");
                 JSONObject body = result.body;
@@ -950,6 +971,11 @@ public final class AlphaWalletActivity extends Activity {
                     else rings++;
                 }
                 String silverText = boxes + " Box  |  " + rings + " Ring";
+                if (waiting) previews.clear();
+                else if (previewSession != null && token.equals(sessions.load()))
+                    previews.save(previewSession.ownerId(), previewSession.lineage(), "wallet",
+                            new JSONObject().put("address", expectedAddress).put("sol", snapshot.sol)
+                                    .put("eru", snapshot.eru).put("boxes", boxes).put("rings", rings), previewRevision);
                 runOnUiThread(() -> {
                     if (isFinishing() || isDestroyed() || request != generation ||
                             !token.equals(sessions.load())) return;
@@ -963,6 +989,7 @@ public final class AlphaWalletActivity extends Activity {
                                     "No ERU available to send.");
                 });
             } catch (Exception ignored) {
+                previews.clear();
                 runOnUiThread(() -> {
                     if (isFinishing() || isDestroyed() || request != generation) return;
                     availableEru = null;

@@ -61,6 +61,7 @@ import xyz.etherings.player.api.ApiConfig;
 import xyz.etherings.player.api.EtheringsApi;
 import xyz.etherings.player.alpha.AlphaLaunchGate;
 import xyz.etherings.player.alpha.AlphaSessionStore;
+import xyz.etherings.player.alpha.AlphaVisualSnapshotStore;
 import xyz.etherings.player.economy.ErtValue;
 import xyz.etherings.player.auth.LoginSessionService;
 import xyz.etherings.player.auth.LoginUiState;
@@ -1556,7 +1557,9 @@ public class MainActivity extends Activity {
             alphaSilverGeneration++;
             selectedMode = mode;
             renderAlphaMode();
-            if (mode == Mode.WALK || mode == Mode.ACTIVITY) loadAlphaEconomy();
+            if ((mode == Mode.WALK || mode == Mode.ACTIVITY) &&
+                    (alphaEconomy == null || !LocalDate.now().toString().equals(alphaEconomy.date())))
+                loadAlphaEconomy();
             return;
         }
         if (currentProfile == null) {
@@ -1775,7 +1778,7 @@ public class MainActivity extends Activity {
                 notificationPermissionMissing);
         stepStatusView.setText(stepTrackingState.message());
         if (sync.lastSuccessfulSyncAtMs() > alphaEconomyDeliveryAt && !alphaEconomyLoading)
-            loadAlphaEconomy();
+            loadAlphaEconomy(true);
         if (selectedMode == Mode.ACTIVITY && sync.lastSuccessfulSyncAtMs()
                 > alphaActivityDeliveryAt && !alphaActivityLoading) loadAlphaActivitySummary();
     }
@@ -1787,7 +1790,9 @@ public class MainActivity extends Activity {
         setHeaderBalanceAppearance(false);
     }
 
-    private void loadAlphaEconomy() {
+    private void loadAlphaEconomy() { loadAlphaEconomy(false); }
+
+    private void loadAlphaEconomy(boolean displayOnly) {
         AlphaSessionStore.VerifiedSession session = new AlphaSessionStore(this).verified();
         if (session == null) return;
         if (alphaEconomyLoading) {
@@ -1802,7 +1807,8 @@ public class MainActivity extends Activity {
             try {
                 loaded = (AlphaHomeEconomySnapshot) Class.forName(
                         "xyz.etherings.player.alpha.AlphaHomeEconomyClient")
-                        .getMethod("load", android.content.Context.class).invoke(null, this);
+                        .getMethod("load", android.content.Context.class, boolean.class)
+                        .invoke(null, this, displayOnly);
             } catch (Exception ignored) { }
             AlphaHomeEconomySnapshot result = loaded;
             runOnUiThread(() -> {
@@ -1818,8 +1824,10 @@ public class MainActivity extends Activity {
                     if (refreshPending && current != null) loadAlphaEconomy();
                     return;
                 }
-                alphaEconomy = result;
-                stepDisplaySnapshotStore.saveServerDailyStepCap(current.ownerId(),
+                alphaEconomy = displayOnly && result != null
+                        ? result.withDisplayContext(alphaEconomy,
+                            stepDisplaySnapshotStore.serverDailyStepCap(current.ownerId())) : result;
+                if (!displayOnly) stepDisplaySnapshotStore.saveServerDailyStepCap(current.ownerId(),
                         result == null ? LocalDate.now().toString() : result.date(),
                         result == null ? null : result.dailyStepCap());
                 alphaEconomyDeliveryAt = deliveryAtRequest;
@@ -1831,6 +1839,7 @@ public class MainActivity extends Activity {
 
     private void loadAlphaHome() {
         int request = ++alphaSilverGeneration;
+        long previewRevision = new AlphaVisualSnapshotStore(this).revision();
         boolean previouslySilver = alphaRingEquipment != null &&
                 "SILVER_RING".equals(alphaRingEquipment.selection.kind);
         alphaHomeRefreshing = true;
@@ -1838,6 +1847,7 @@ public class MainActivity extends Activity {
         copperRingRetryView.setVisibility(View.GONE);
         if (alphaRingEquipment != null && alphaHomeCoopers != null) renderAlphaHome();
         alphaScreenIo.execute(() -> {
+            restoreAlphaPreview("home", request, previewRevision);
             List<CopperRing> coopers = null;
             AlphaRingEquipmentSnapshot equipment = null;
             SilverInventorySnapshot inventory = null;
@@ -1872,6 +1882,7 @@ public class MainActivity extends Activity {
                 if (loadedCoopers == null || loadedEquipment == null ||
                         ("SILVER_RING".equals(loadedEquipment.selection.kind) && loadedInventory == null)) {
                     alphaHomeRefreshing = false;
+                    new AlphaVisualSnapshotStore(this).clear();
                     alphaRingEquipment = null;
                     alphaHomeCoopers = null;
                     alphaSilverInventory = null;
@@ -1891,6 +1902,7 @@ public class MainActivity extends Activity {
                 alphaHomeCoopers = loadedCoopers;
                 alphaRingEquipment = loadedEquipment;
                 alphaHomeRefreshing = false;
+                saveAlphaPreview("home", previewRevision);
                 renderAlphaHome();
             });
             if (loadedInventory != null) alphaSilverMediaIo.execute(() -> {
@@ -1982,7 +1994,7 @@ public class MainActivity extends Activity {
                 panelTitleView.setVisibility(View.VISIBLE);
                 panelBodyView.setVisibility(View.VISIBLE);
                 panelBodyView.setText("Equipped Silver Ring #" + selectedAsset.serial +
-                        "; verified artwork unavailable.");
+                        (alphaHomeRefreshing ? "; checking current state..." : "; verified artwork unavailable."));
                 copperRingRetryView.setVisibility(View.VISIBLE);
                 copperRingArtworkView.setVisibility(View.GONE);
                 return;
@@ -2006,6 +2018,7 @@ public class MainActivity extends Activity {
 
     private void loadAlphaSilverInventory() {
         int request = ++alphaSilverGeneration;
+        long previewRevision = new AlphaVisualSnapshotStore(this).revision();
         alphaSilverListedMints = Collections.emptySet();
         alphaSilverListingsUnavailable = false;
         boolean reopenCooper = alphaCooperDetail;
@@ -2024,26 +2037,8 @@ public class MainActivity extends Activity {
         panelBodyView.setText("Loading Silver inventory...");
         if (alphaSilverInventory != null && alphaStarterInventory != null &&
                 alphaRingEquipment != null) renderAlphaSilverInventory();
-        alphaAssetReadIo.execute(() -> {
-            java.util.Set<String> listed = Collections.emptySet();
-            boolean unavailable = false;
-            try {
-                listed = (java.util.Set<String>) Class.forName(
-                        "xyz.etherings.player.alpha.AlphaMarketplaceClient")
-                        .getMethod("ownedActiveMints", android.content.Context.class)
-                        .invoke(null, this);
-            } catch (Exception error) { unavailable = true; }
-            java.util.Set<String> verified = listed;
-            boolean failed = unavailable;
-            runOnUiThread(() -> {
-                if (isFinishing() || isDestroyed() || selectedMode != Mode.RINGS ||
-                        request != alphaSilverGeneration) return;
-                alphaSilverListedMints = verified;
-                alphaSilverListingsUnavailable = failed;
-                if (!alphaInventoryRefreshing) renderAlphaSilverInventory();
-            });
-        });
         alphaScreenIo.execute(() -> {
+            restoreAlphaPreview("rings", request, previewRevision);
             SilverInventorySnapshot result = null;
             AlphaStarterSnapshot starter = null;
             AlphaRingEquipmentSnapshot equipment = null;
@@ -2054,7 +2049,7 @@ public class MainActivity extends Activity {
             Future<SilverInventorySnapshot> silverRead = alphaAssetReadIo.submit(() ->
                     (SilverInventorySnapshot) Class.forName(
                             "xyz.etherings.player.alpha.AlphaSilverInventoryClient")
-                            .getMethod("load", android.content.Context.class).invoke(null, this));
+                            .getMethod("loadForCollection", android.content.Context.class).invoke(null, this));
             Future<AlphaRingEquipmentSnapshot> equipmentRead = alphaAssetReadIo.submit(() ->
                     (AlphaRingEquipmentSnapshot) Class.forName(
                             "xyz.etherings.player.alpha.AlphaRingEquipmentClient")
@@ -2076,6 +2071,7 @@ public class MainActivity extends Activity {
                         request != alphaSilverGeneration) return;
                 if (snapshot == null || starterSnapshot == null || equipmentSnapshot == null) {
                     alphaInventoryRefreshing = false;
+                    new AlphaVisualSnapshotStore(this).clear();
                     alphaSilverInventory = null;
                     alphaStarterInventory = null;
                     alphaRingEquipment = null;
@@ -2090,9 +2086,12 @@ public class MainActivity extends Activity {
                 alphaSilverArtwork = matchingSilverArtwork(alphaSilverInventory, snapshot,
                         alphaSilverArtwork);
                 alphaSilverInventory = snapshot;
+                alphaSilverListedMints = snapshot.listedMints;
+                alphaSilverListingsUnavailable = !snapshot.listingStatusAvailable;
                 alphaStarterInventory = starterSnapshot;
                 alphaRingEquipment = equipmentSnapshot;
                 alphaInventoryRefreshing = false;
+                saveAlphaPreview("rings", previewRevision);
                 if (reopenCooper && starterSnapshot.findCooper(reopenCooperId) != null) {
                     alphaCooperDetail = true;
                     alphaCooperDetailId = reopenCooperId;
@@ -2144,6 +2143,72 @@ public class MainActivity extends Activity {
                 });
             }
         });
+    }
+
+    private void saveAlphaPreview(String screen, long revision) {
+        AlphaSessionStore.VerifiedSession session = new AlphaSessionStore(this).verified();
+        if (session == null || alphaRingEquipment == null || !alphaRingEquipment.effectsEnabled) return;
+        try {
+            List<CopperRing> coopers = "rings".equals(screen) ? alphaStarterInventory.coopers() : alphaHomeCoopers;
+            org.json.JSONArray rows = new org.json.JSONArray();
+            for (CopperRing ring : coopers) rows.put(ring.toJson());
+            JSONObject body = new JSONObject().put("equipment", alphaRingEquipment.json()).put("coopers", rows);
+            if (alphaSilverInventory != null) body.put("silver", alphaSilverInventory.json());
+            if ("rings".equals(screen)) body.put("starter", alphaStarterInventory.cooper().toJson())
+                    .put("silverStatus", alphaStarterInventory.silverStatus());
+            alphaScreenIo.execute(() -> new AlphaVisualSnapshotStore(this).save(
+                    session.ownerId(), session.lineage(), screen, body, revision));
+        } catch (Exception ignored) { }
+    }
+
+    // Runs on a read worker. Preview data can render only while fresh verification
+    // is pending; the existing refreshing guards disable every asset action.
+    private void restoreAlphaPreview(String screen, int request, long revision) {
+        AlphaSessionStore.VerifiedSession session = new AlphaSessionStore(this).verified();
+        if (session == null) return;
+        AlphaVisualSnapshotStore store = new AlphaVisualSnapshotStore(this);
+        try {
+            JSONObject body = store.load(session.ownerId(), session.lineage(), screen);
+            if (body == null) return;
+            AlphaRingEquipmentSnapshot equipment = AlphaRingEquipmentSnapshot.parse(body.getJSONObject("equipment"));
+            List<CopperRing> coopers = new ArrayList<>();
+            org.json.JSONArray rows = body.getJSONArray("coopers");
+            if (rows.length() > 100) throw new IllegalArgumentException("Preview too large");
+            for (int i = 0; i < rows.length(); i++) coopers.add(CopperRing.fromJson(rows.getJSONObject(i)));
+            SilverInventorySnapshot silver = body.has("silver") ?
+                    SilverInventorySnapshot.parse(body.getJSONObject("silver")) : null;
+            AlphaStarterSnapshot starter = "rings".equals(screen) ? new AlphaStarterSnapshot(
+                    CopperRing.fromJson(body.getJSONObject("starter")), body.getString("silverStatus"), coopers) : null;
+            Map<String, Bitmap> art = silver == null ? Collections.emptyMap() :
+                    (Map<String, Bitmap>) Class.forName("xyz.etherings.player.alpha.AlphaSilverArtwork")
+                    .getMethod("loadCached", android.content.Context.class, SilverInventorySnapshot.class)
+                    .invoke(null, this, silver);
+            Map<String, Bitmap> cooperArt = (Map<String, Bitmap>) Class.forName(
+                    "xyz.etherings.player.alpha.AlphaCooperArtwork")
+                    .getMethod("loadCached", android.content.Context.class, List.class, boolean.class)
+                    .invoke(null, this, coopers, "home".equals(screen));
+            runOnUiThread(() -> {
+                AlphaSessionStore.VerifiedSession current = new AlphaSessionStore(this).verified();
+                if (isFinishing() || isDestroyed() || request != alphaSilverGeneration ||
+                        store.revision() != revision || current == null ||
+                        !session.lineage().equals(current.lineage()) || !session.ownerId().equals(current.ownerId())) return;
+                boolean home = "home".equals(screen);
+                if (home ? selectedMode != Mode.WALK || !alphaHomeRefreshing || alphaHomeCoopers != null :
+                        selectedMode != Mode.RINGS || !alphaInventoryRefreshing || alphaStarterInventory != null) return;
+                alphaRingEquipment = equipment;
+                alphaHomeCoopers = coopers;
+                alphaSilverInventory = silver;
+                alphaSilverArtwork = art;
+                alphaCooperArtwork = cooperArt;
+                if (home) renderAlphaHome();
+                else {
+                    alphaStarterInventory = starter;
+                    alphaSilverListedMints = silver == null ? Collections.emptySet() : silver.listedMints;
+                    alphaSilverListingsUnavailable = true;
+                    renderAlphaSilverInventory();
+                }
+            });
+        } catch (Exception ignored) { store.clear(); }
     }
 
     private void renderAlphaSilverInventory() {

@@ -29,6 +29,11 @@ public final class AlphaRingEquipmentSnapshot {
     public final String eligibility;
     public final boolean effectsEnabled;
 
+    public JSONObject json() throws Exception {
+        return new JSONObject().put("selection", selection.json()).put("version", version)
+                .put("eligibility", eligibility).put("effectsEnabled", effectsEnabled);
+    }
+
     private AlphaRingEquipmentSnapshot(Key selection, String version, String eligibility,
             boolean effectsEnabled) {
         this.selection = selection;

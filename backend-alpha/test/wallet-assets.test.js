@@ -12,6 +12,7 @@ const token = 'a'.repeat(64);
 function fixture({ binding = { status: 200, body: { walletAddress, environment: 'alpha-local' } },
   actualGenesis = genesis, tokenOwner = walletAddress } = {}) {
   const calls = [];
+  const inventoryCalls = [];
   const rpc = {
     getGenesisHash: () => ({ send: async () => { calls.push('genesis'); return actualGenesis; } }),
     getBalance: (owner, options) => ({ send: async () => {
@@ -30,11 +31,12 @@ function fixture({ binding = { status: 200, body: { walletAddress, environment: 
   };
   const wallet = { current: async session => session === token
     ? binding : { status: 401, body: { message: 'Authentication required.' } } };
-  const silver = { inventory: async () => ({ status: 200, body: { assets: [
-    { kind: 'SILVER_RING', mintAddress: mint, designId: 1 },
-  ] } }) };
+  const silver = { inventory: async () => { inventoryCalls.push('silver');
+    return { status: 200, body: { assets: [
+      { kind: 'SILVER_RING', mintAddress: mint, designId: 1 },
+    ] } }; } };
   const assets = createWalletAssets({ wallet, silver, rpc, mint, environment: 'alpha-local' });
-  return { assets, calls };
+  return { assets, calls, inventoryCalls };
 }
 
 test('finalized Kit balances and verified Silver inventory are bound to one wallet', async () => {
@@ -46,6 +48,30 @@ test('finalized Kit balances and verified Silver inventory are bound to one wall
     silver: [{ kind: 'SILVER_RING', mintAddress: mint, designId: 1 }] });
   assert.deepEqual(calls, ['genesis', ['sol', walletAddress, 'finalized'],
     ['eru', walletAddress, mint, 'finalized']]);
+});
+
+test('balance-only read keeps wallet, genesis and token checks without scanning Silver', async () => {
+  const { assets, calls, inventoryCalls } = fixture();
+  const result = await assets.readBalances(token);
+  assert.equal(result.status, 200);
+  assert.deepEqual(result.body, { cluster: 'devnet', walletAddress,
+    solLamports: '500000000', eruBaseUnits: '31000000000', eruMint: mint });
+  assert.deepEqual(calls, ['genesis', ['sol', walletAddress, 'finalized'],
+    ['eru', walletAddress, mint, 'finalized']]);
+  assert.deepEqual(inventoryCalls, []);
+  for (const binding of [
+    { status: 401, body: { message: 'Authentication required.' } },
+    { status: 200, body: { walletAddress: null } },
+  ]) {
+    const denied = fixture({ binding });
+    assert.equal((await denied.assets.readBalances(token)).status,
+      binding.status === 401 ? 401 : 409);
+    assert.deepEqual(denied.calls, []);
+  }
+  await assert.rejects(fixture({ actualGenesis: 'wrong' }).assets.readBalances(token),
+    /cluster mismatch/);
+  await assert.rejects(fixture({ tokenOwner: mint }).assets.readBalances(token),
+    /Invalid ERU token account/);
 });
 
 test('SOL and ERU reads start together after Silver inventory succeeds', async () => {
@@ -100,11 +126,21 @@ test('GET /wallet/assets requires a valid session and returns no-store JSON', as
     const base = `http://127.0.0.1:${server.address().port}`;
     const missing = await fetch(`${base}/wallet/assets`);
     assert.equal(missing.status, 401);
+    const missingBalances = await fetch(`${base}/wallet/balances`);
+    assert.equal(missingBalances.status, 401);
     const response = await fetch(`${base}/wallet/assets`, {
       headers: { authorization: `Bearer ${token}` },
     });
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('cache-control'), 'no-store');
     assert.equal((await response.json()).eruBaseUnits, '31000000000');
+    const balances = await fetch(`${base}/wallet/balances`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    assert.equal(balances.status, 200);
+    assert.equal(balances.headers.get('cache-control'), 'no-store');
+    const body = await balances.json();
+    assert.equal(body.eruBaseUnits, '31000000000');
+    assert.equal(Object.hasOwn(body, 'silver'), false);
   } finally { await new Promise(resolve => server.close(resolve)); }
 });
