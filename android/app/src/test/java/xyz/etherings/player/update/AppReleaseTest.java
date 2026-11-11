@@ -31,11 +31,12 @@ public final class AppReleaseTest {
     }
 
     @Test
-    public void release50NotifiesEveryEarlierPublicAlphaVersion() throws Exception {
-        AppRelease release = AppRelease.fromJson(validJson(50, true));
-        for (int installedCode = 42; installedCode < 50; installedCode++)
+    public void release55NotifiesEveryEarlierPublicAlphaVersion() throws Exception {
+        AppRelease release = AppRelease.fromJson(validJson(55, true));
+        for (int installedCode = 42; installedCode < 55; installedCode++)
             assertTrue("Installed code " + installedCode, release.isNewerThan(installedCode));
-        assertFalse(release.isNewerThan(50));
+        assertFalse(release.isNewerThan(55));
+        for (int older = 1; older < 55; older++) assertTrue(release.isNewerThan(older));
     }
 
     @Test
@@ -79,10 +80,11 @@ public final class AppReleaseTest {
             release = AppRelease.fromJson(new JSONObject(
                     new String(metadata.readAllBytes(), StandardCharsets.UTF_8)));
         }
-        assertEquals(50, release.versionCode());
-        assertFalse(release.isNewerThan(50));
-        assertTrue(release.matchesArtifact(123_050_250L,
-                "724771c6307186dbcc91ecf2862ede4e23bdba63572fffed14d9198d34398998"));
+        assertEquals(55, release.versionCode());
+        assertFalse(release.isNewerThan(55));
+        for (int older = 1; older < 55; older++) assertTrue(release.isNewerThan(older));
+        assertTrue(release.matchesArtifact(123_066_634L,
+                "ab3bd47cfa904217165ae31a26b35143c793c6e4e2f6a3f4e19be1430ebfc700"));
     }
 
     static JSONObject validJson(int versionCode, boolean required) throws JSONException {

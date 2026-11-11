@@ -1,3 +1,4 @@
+import { timeDisplay } from './display-timing.js';
 // Resolve only the authoritative Ring inputs for a future daily M2E snapshot.
 // This does not create a snapshot, accept steps, or credit ERT.
 import { silverRingIsListed } from './silver-listed-eligibility.js';
@@ -40,7 +41,7 @@ export async function resolveM2eRingInputs({ accountId, selection, ownedCooperRi
 
   let listed;
   try {
-    listed = await chain.listOwnedRings({ programId, cluster, walletAddress });
+    listed = await timeDisplay('m2e_owned_rings', () => chain.listOwnedRings({ programId, cluster, walletAddress }));
   } catch { throw unavailable(); }
   if (!Array.isArray(listed)) throw unavailable();
 
@@ -52,8 +53,8 @@ export async function resolveM2eRingInputs({ accountId, selection, ownedCooperRi
     seen.add(ring.mintAddress);
     let eligibility;
     try {
-      eligibility = await chain.readEquipmentEligibility({ programId, cluster,
-        walletAddress, mintAddress: ring.mintAddress });
+      eligibility = await timeDisplay('m2e_eligibility', () => chain.readEquipmentEligibility({ programId, cluster,
+        walletAddress, mintAddress: ring.mintAddress }));
     } catch { throw unavailable(); }
     if (eligibility?.state === 'UNKNOWN' || !eligibility) throw unavailable();
     if (eligibility.state === 'COOLDOWN' || eligibility.state === 'TRANSFERRED_AWAY') continue;
@@ -62,7 +63,7 @@ export async function resolveM2eRingInputs({ accountId, selection, ownedCooperRi
         eligibility.ring.mintAddress !== ring.mintAddress ||
         eligibility.ring.comfort !== ring.comfort) throw unavailable();
     try {
-      if (await silverRingIsListed(marketReader, ring.mintAddress)) continue;
+      if (await timeDisplay('m2e_listing', () => silverRingIsListed(marketReader, ring.mintAddress))) continue;
     } catch { throw unavailable(); }
     eligibleSilver.set(ring.mintAddress, eligibility.ring);
   }

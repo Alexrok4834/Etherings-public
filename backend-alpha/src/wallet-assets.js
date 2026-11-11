@@ -1,3 +1,4 @@
+import { timeDisplay } from './display-timing.js';
 import { address, createSolanaRpc } from '@solana/kit';
 import { TOKEN_2022_PROGRAM_ADDRESS } from '@solana-program/token-2022';
 
@@ -12,7 +13,7 @@ export function createWalletAssets({ wallet, silver, rpcUrl, mint, environment,
   address(mint);
 
   async function read(token, includeSilver) {
-      const binding = await wallet.current(token);
+      const binding = await timeDisplay('binding', () => wallet.current(token));
       if (binding.status !== 200) return binding;
       const walletAddress = binding.body.walletAddress;
       if (!walletAddress || binding.body.environment !== environment) return UNBOUND;
@@ -22,7 +23,7 @@ export function createWalletAssets({ wallet, silver, rpcUrl, mint, environment,
       }
       let inventory;
       if (includeSilver) {
-        inventory = await silver.inventory(token);
+        inventory = await timeDisplay('inventory', () => silver.inventory(token));
         if (inventory.status !== 200) return inventory;
         if (!Array.isArray(inventory.body.assets)) throw new Error('Invalid Silver inventory');
       }

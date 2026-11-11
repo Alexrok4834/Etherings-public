@@ -1,3 +1,5 @@
+import { createBatchedDisplayInventory } from './batched-display-inventory.js';
+import { withM2eDisplayRpc } from './m2e-display-rpc.js';
 import pg from 'pg';
 import { isIP } from 'node:net';
 import { createAuth } from './auth.js';
@@ -263,8 +265,9 @@ try {
   }
   // Dedicated display readers: never install memoized methods on the reader
   // used by equipment, settlement, signing, transfers or operation preflights.
-  const displaySilverFor = (url, rpc = createSolanaRpc(url)) => createSilverFirstEntry({
-    pool, chain: createVerifiedDisplayReader({ rpc,
+  const displaySilverFor = (url, rpc = createSolanaRpc(url)) => createBatchedDisplayInventory({
+    rpc, createService: batched => createSilverFirstEntry({
+    pool, chain: createVerifiedDisplayReader({ rpc: batched,
       createReader: observed => createSilverChainReader(url,
         { rpc: observed, propagateTransientReadErrors: true }) }),
     cluster: 'devnet', programId: silverProgram, collectionId: silverCollectionId,
@@ -272,7 +275,7 @@ try {
     openingProjectionEnabled: process.env.ALPHA_SILVER_OPENING_SUBMIT_ENABLED === 'true',
     drawInventoryEnabled: drawFlag,
     breedingInventoryEnabled: breedingFlag === 'true',
-  });
+  }) });
   const displaySilver = silver ? displaySilverFor(process.env.ALPHA_ERU_PROOF_RPC_URL) : null;
   let assets = silver && process.env.ALPHA_ERU_PROOF_CLUSTER === 'devnet' &&
     process.env.ALPHA_COOPER_ERU_MINT_ADDRESS
@@ -513,16 +516,21 @@ try {
   }
   const server = createAlphaServer(
     auth,
-    wallet, eru, measureMethod(silver ? createInventoryDisplay({ auth, wallet, silver: displaySilver,
+    wallet, eru, measureMethod(silver ? createInventoryDisplay({ auth, wallet, silver, displaySilver,
       marketplace }) : null, 'inventory', 'silver-inventory'),
     silverOpening, silverCandidateIntent, measureMethod(assets, 'read', 'wallet-assets'),
     starterCooper, undefined, measureMethod(equipment, 'current', 'ring-equipment'), m2eStepSync,
     m2eStepSync ? createM2eProfile({ pool, auth, config: m2eConfig,
       resolveEligibleRingCount: async accountId => {
-        const read = () => resolveM2eDisplayRingCount({ client: pool, accountId,
-          walletEnvironment: process.env.ALPHA_WALLET_ENVIRONMENT,
-          chain: silverChain, marketReader: marketplaceReader,
-          programId: silverProgram, cluster: 'devnet' });
+        const read = () => withM2eDisplayRpc(createSolanaRpc(process.env.ALPHA_ERU_PROOF_RPC_URL),
+          rpc => resolveM2eDisplayRingCount({ client: pool, accountId,
+            walletEnvironment: process.env.ALPHA_WALLET_ENVIRONMENT,
+            chain: createSilverChainReader(process.env.ALPHA_ERU_PROOF_RPC_URL, { rpc,
+              propagateTransientReadErrors: true }),
+            marketReader: marketplaceReader ? createSilverMarketplaceReader({ rpc,
+              rpcUrl: process.env.ALPHA_ERU_PROOF_RPC_URL,
+              marketProgramId: marketProgram, silverProgramId: silverProgram }) : null,
+            programId: silverProgram, cluster: 'devnet' }));
         return apiRpcMeter ? apiRpcMeter.measure('m2e-today', read) : read();
       } }) : null,
     createAdminErtCredit({ pool, auth }),

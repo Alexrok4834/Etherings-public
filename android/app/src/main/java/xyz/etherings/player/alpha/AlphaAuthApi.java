@@ -12,6 +12,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 public final class AlphaAuthApi {
+    private static final AlphaPendingDisplayReads DISPLAY_READS = new AlphaPendingDisplayReads();
     private static final Object RENEW_LOCK = new Object();
     private final String baseUrl;
     private final AlphaSessionStore sessions;
@@ -30,14 +31,38 @@ public final class AlphaAuthApi {
         if (invalidate) previews.clear();
         try {
             Result result = request("POST", path, body, token);
+            if (!invalidate && result.status != 200)
+                AlphaDisplayDiagnostics.http(true, false, result.status);
             if (!invalidate && result.status != 200) previews.clear();
             return result;
-        } catch (Exception error) { previews.clear(); throw error; }
+        } catch (Exception error) {
+            if (!invalidate) AlphaDisplayDiagnostics.failure(AlphaDisplayDiagnostics.Stage.RINGS_STARTER, error);
+            previews.clear(); throw error;
+        }
         finally { if (invalidate) previews.clear(); }
     }
 
     public Result get(String path, String token) throws Exception {
         return request("GET", path, null, token);
+    }
+
+    /** Display callers only; operation reviews continue to use get(). */
+    public Result getDisplay(String path, String token) throws Exception {
+        if (!(path.equals("/silver/inventory") || path.equals("/silver/inventory?listings=true") ||
+                path.equals("/wallet/assets") || path.equals("/wallet/balances")))
+            throw new IllegalArgumentException("Unexpected display path");
+        long revision = previews.revision();
+        String key = new org.json.JSONArray().put(baseUrl).put(token).put(revision).put(path).toString();
+        String encoded = DISPLAY_READS.read(key, () -> {
+            Result result = get(path, token);
+            return new JSONObject().put("status", result.status).put("body", result.body).toString();
+        });
+        if (previews.revision() != revision) {
+            AlphaDisplayDiagnostics.failure(AlphaDisplayDiagnostics.Stage.DISPLAY_REVISION, null);
+            throw new IllegalStateException("Display changed during read");
+        }
+        JSONObject result = new JSONObject(encoded);
+        return new Result(result.getInt("status"), result.getJSONObject("body"));
     }
 
     static boolean isWalletPost(String path) {

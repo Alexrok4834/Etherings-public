@@ -82,17 +82,29 @@ test('finalized listing projection distinguishes active source from stale transf
   const discoveredListing = Buffer.from(listing);
   discoveredListing.writeBigUInt64LE(9n, 112); // Discovery cannot set the displayed price.
   let discoveryGenesis = 'devnet-test';
+  let extraEntries = [];
+  let primaryGenesis = 'devnet-test';
+  let genesisCalls = 0, configCalls = 0;
   const discoveryRpc = {
     getGenesisHash: () => ({ send: async () => discoveryGenesis }),
     getProgramAccounts: (_program, options) => ({ send: async () => {
       discovered += 1;
       sellerFilter = options.filters?.[1]?.memcmp;
-      return [{ pubkey: listingKey, account: wrapped(market, discoveredListing) }];
+      return [{ pubkey: listingKey, account: wrapped(market, discoveredListing) }, ...extraEntries];
     } }),
   };
+  let batchCalls = 0, batchMax = 0, incomplete = false;
   const rpc = {
-    getGenesisHash: () => ({ send: async () => 'devnet-test' }),
-    getAccountInfo: account => ({ send: async () => ({ value: accounts.get(account) ?? null }) }),
+    getMultipleAccounts: keys => ({ send: async () => {
+      batchCalls++; batchMax = Math.max(batchMax, keys.length);
+      for (const account of keys) if (account === configKey) configCalls++;
+      return { context: { slot: 1n }, value: incomplete ? [] : keys.map(account => accounts.get(account) ?? null) };
+    } }),
+    getGenesisHash: () => ({ send: async () => { genesisCalls++; return primaryGenesis; } }),
+    getAccountInfo: account => ({ send: async () => {
+      if (account === configKey) configCalls++;
+      return { value: accounts.get(account) ?? null };
+    } }),
   };
   const reader = createSilverMarketplaceReader({ rpcUrl: 'stub', rpc, discoveryRpc,
     marketProgramId: market, silverProgramId: silver,
@@ -122,7 +134,43 @@ test('finalized listing projection distinguishes active source from stale transf
   assert.equal((await reader.readListing(mint)).sourceReady, false);
   assert.equal((await reader.listActive()).length, 0);
   assert.equal(discovered, 5);
+  // Two distinct active listings share invariant reads only for this call.
+  listing[9] = 1; accounts.set(listingKey, wrapped(market, listing));
+  const mint2 = key(), source2 = key();
+  const listingKey2 = await pda(market, text('silver-market-listing'), bytes(mint2));
+  const stateKey2 = await pda(silver, text('silver-ring-state'), bytes(mint2));
+  const listing2 = Buffer.from(listing); bytes(mint2).copy(listing2, 16); bytes(source2).copy(listing2, 80);
+  const state2 = Buffer.from(state); bytes(mint2).copy(state2, 16);
+  accounts.set(listingKey2, wrapped(market, listing2)); accounts.set(stateKey2, wrapped(silver, state2));
+  const token2 = structuredClone(accounts.get(source)); token2.data.parsed.info.mint = mint2;
+  accounts.set(source2, token2);
+  extraEntries = [{ pubkey: listingKey2, account: wrapped(market, listing2) }];
+  const expected = [mint, mint2].map(mintAddress => ({ mintAddress, kind: 'SILVER_RING' }));
+  genesisCalls = 0; configCalls = 0; batchCalls = 0; batchMax = 0;
+  assert.deepEqual(await reader.listActiveForSeller(seller), expected);
+  assert.ok(batchCalls > 0); assert.ok(batchMax >= 2);
+  assert.equal(genesisCalls, 1); assert.equal(configCalls, 1);
+  // Concurrent requests do not share state or skip their own checks.
+  genesisCalls = 0; configCalls = 0;
+  assert.deepEqual(await Promise.all([reader.listActiveForSeller(seller), reader.listActiveForSeller(seller)]), [expected, expected]);
+  assert.equal(genesisCalls, 2); assert.equal(configCalls, 2);
+  // Direct detail still uses its original independent checks.
+  genesisCalls = 0; configCalls = 0; batchCalls = 0; await reader.readListing(mint);
+  assert.equal(batchCalls, 0);
+  assert.equal(genesisCalls, 2); assert.equal(configCalls, 1);
+  accounts.set(configKey, wrapped(market, Buffer.alloc(137)));
+  await assert.rejects(reader.listActiveForSeller(seller), /config mismatch/);
+  accounts.set(configKey, wrapped(market, config));
+  primaryGenesis = 'wrong-chain';
+  await assert.rejects(reader.listActiveForSeller(seller), /reader genesis mismatch/);
+  primaryGenesis = 'devnet-test';
+  assert.deepEqual(await reader.listActiveForSeller(seller), expected);
+  incomplete = true;
+  await assert.rejects(reader.listActiveForSeller(seller), /Incomplete display accounts/);
+  incomplete = false;
+  assert.deepEqual(await reader.listActiveForSeller(seller), expected);
+  const beforeWrongDiscovery = discovered;
   discoveryGenesis = 'wrong-chain';
   await assert.rejects(reader.listActive(), /discovery RPC genesis mismatch/);
-  assert.equal(discovered, 5);
+  assert.equal(discovered, beforeWrongDiscovery);
 });

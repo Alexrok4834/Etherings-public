@@ -1,3 +1,5 @@
+import { withM2eDisplayRpc } from './m2e-display-rpc.js';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { createHash } from 'node:crypto';
 import { address, createSolanaRpc, getAddressDecoder, getAddressEncoder,
   getProgramDerivedAddress } from '@solana/kit';
@@ -35,41 +37,80 @@ export function createSilverMarketplaceReader({ rpcUrl, discoveryRpcUrl,
     encoding: 'base64', commitment: 'finalized',
   }).send()).value;
   const bytes = account => account && Buffer.from(account.data[0], 'base64');
-  const chain = async () => {
+  // Share invariant checks only within one seller-status read. Never retain
+  // them across requests or use this scope for detail/transaction entry points.
+  const sellerScope = new AsyncLocalStorage();
+  const originalRpc = rpc;
+  rpc = new Proxy(Object.create(null), { get(_, method) {
+    if (method === 'then' || typeof method !== 'string') return undefined;
+    return (...args) => {
+      const active = sellerScope.getStore()?.rpc ?? originalRpc;
+      return active[method](...args);
+    };
+  } });
+  const invariant = (name, load) => {
+    const context = sellerScope.getStore();
+    if (!context) return load();
+    if (!context.has(name)) context.set(name, Promise.resolve().then(load));
+    return context.get(name);
+  };
+  const chain = () => invariant('genesis', async () => {
     if (await rpc.getGenesisHash().send() !== expectedGenesisHash)
       throw new Error('Marketplace reader genesis mismatch');
-  };
+  });
 
   return {
     async listActiveForSeller(walletAddress) {
-      const seller = address(walletAddress);
-      if (!discoveryRpc ||
-          await discoveryRpc.getGenesisHash().send() !== expectedGenesisHash)
-        throw new Error('Marketplace discovery RPC genesis mismatch');
-      const entries = await discoveryRpc.getProgramAccounts(market, {
-        encoding: 'base64', commitment: 'finalized',
-        filters: [{ dataSize: 320 }, { memcmp: {
-          offset: 48n, bytes: seller, encoding: 'base58',
-        } }],
-      }).send();
-      if (entries.length > 100) throw new Error('Marketplace seller listing page required');
-      const listed = [];
-      for (const entry of entries) {
-        const raw = bytes(entry.account);
-        if (entry.account.owner !== market || raw?.length !== 320 ||
-            !raw.subarray(0, 8).equals(MAGIC) || raw[8] !== 1 || raw[9] !== 1 ||
-            ![1, 2].includes(raw[10]) || decode(raw.subarray(48, 80)) !== seller)
-          continue;
-        const mintAddress = decode(raw.subarray(16, 48));
-        if (entry.pubkey !== await pda(market, seed('silver-market-listing'),
-          encode(mintAddress))) continue;
-        const listing = await this.readListing(mintAddress);
-        const kind = raw[10] === 2 ? 'SILVER_RING' : 'SILVER_BOX';
-        if (listing?.address === entry.pubkey && listing.state === 'ACTIVE' &&
-            listing.sourceReady && listing.sellerAddress === seller &&
-            listing.kind === kind) listed.push({ mintAddress, kind });
-      }
-      return listed;
+      return withM2eDisplayRpc(originalRpc, batched => {
+        const context = new Map();
+        context.rpc = batched;
+        return sellerScope.run(context, async () => {
+          const seller = address(walletAddress);
+          if (!discoveryRpc ||
+              await discoveryRpc.getGenesisHash().send() !== expectedGenesisHash)
+            throw new Error('Marketplace discovery RPC genesis mismatch');
+          const entries = await discoveryRpc.getProgramAccounts(market, {
+            encoding: 'base64', commitment: 'finalized',
+            filters: [{ dataSize: 320 }, { memcmp: {
+              offset: 48n, bytes: seller, encoding: 'base58',
+            } }],
+          }).send();
+          if (entries.length > 100) throw new Error('Marketplace seller listing page required');
+          const candidates = [];
+          for (const entry of entries) {
+            const raw = bytes(entry.account);
+            if (entry.account.owner !== market || raw?.length !== 320 ||
+                !raw.subarray(0, 8).equals(MAGIC) || raw[8] !== 1 || raw[9] !== 1 ||
+                ![1, 2].includes(raw[10]) || decode(raw.subarray(48, 80)) !== seller)
+              continue;
+            const mintAddress = decode(raw.subarray(16, 48));
+            if (entry.pubkey !== await pda(market, seed('silver-market-listing'),
+              encode(mintAddress))) continue;
+            candidates.push({ key: entry.pubkey, mintAddress,
+              kind: raw[10] === 2 ? 'SILVER_RING' : 'SILVER_BOX' });
+          }
+          const listed = [];
+          // Seed only fresh primary reads, never discovery projections. Limit
+          // active verification to four and settle all work before leaving scope.
+          for (let offset = 0; offset < candidates.length; offset += 4) {
+            const group = candidates.slice(offset, offset + 4);
+            await batched.getMultipleAccounts(group.map(item => item.key), {
+              encoding: 'base64', commitment: 'finalized',
+            }).send();
+            const results = await Promise.allSettled(group.map(async item => {
+              const listing = await this.readListing(item.mintAddress);
+              return listing?.address === item.key && listing.state === 'ACTIVE' &&
+                listing.sourceReady && listing.sellerAddress === seller &&
+                listing.kind === item.kind
+                ? { mintAddress: item.mintAddress, kind: item.kind } : null;
+            }));
+            const failure = results.find(result => result.status === 'rejected');
+            if (failure) throw failure.reason;
+            listed.push(...results.map(result => result.value).filter(Boolean));
+          }
+          return listed;
+        });
+      });
     },
     async verifyPinnedPrograms() {
       await chain();
@@ -156,6 +197,7 @@ export function createSilverMarketplaceReader({ rpcUrl, discoveryRpcUrl,
         commitment: 'finalized', maxSupportedTransactionVersion: 0 }).send();
     },
     async readConfig() {
+      return invariant('config', async () => {
       await chain();
       const key = await pda(market, seed('silver-market-config'));
       const account = await read(key);
@@ -169,6 +211,7 @@ export function createSilverMarketplaceReader({ rpcUrl, discoveryRpcUrl,
       return { address: key, version: raw.readBigUInt64LE(33).toString(),
         royaltyAddress: decode(raw.subarray(41, 73)),
         platformAddress: decode(raw.subarray(73, 105)) };
+      });
     },
     async readListing(mintAddress) {
       await chain();

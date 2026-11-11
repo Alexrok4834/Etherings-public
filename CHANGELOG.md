@@ -2,6 +2,18 @@
 
 These are the versions players could download. The separate **1.1.1a** build was tested on devices but was not released to everyone.
 
+## 1.3.2a — 11 November 2026
+
+- Home and Rings show saved contents while checking for changes.
+- Screens share saved inventory information and avoid duplicate simultaneous reads.
+- LISTED stays visible on Ring and Box NFTs during refresh, including after returning from Wallet.
+- Fixed recovery from the inventory-loading error found during candidate testing.
+- After confirmed Points allocation on a Cooper Ring, its attributes update without reloading the entire NFT inventory. Unclear results still trigger a fresh check.
+
+Checked on Samsung A8: update without clearing app data; Home, Rings and Wallet; listing labels during and after refresh; equipped Ring. No new paid action or walking test was performed in this final pass. No percentage speedup is claimed. Earlier development candidates were not public releases.
+
+Update notices remain enabled for older compatible Alpha builds. The signed release is **1.3.2a/55**.
+
 ## 1.3.1a â€” 8 November 2026
 
 - Home, Rings and Wallet remember the last checked contents, so restarting the app does not always mean staring at an empty screen. A message explains when current information is still being checked.

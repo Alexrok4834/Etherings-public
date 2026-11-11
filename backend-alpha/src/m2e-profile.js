@@ -1,3 +1,4 @@
+import { timeDisplay } from './display-timing.js';
 import { canonicalErt, displayErt } from './m2e-ert-decimal.js';
 import { createM2eBalanceConfig } from './m2e-balance-config.js';
 import { calculateM2eEarning } from './m2e-earning-calculator.js';
@@ -16,20 +17,20 @@ export function createM2eProfile({ pool, auth, resolveEligibleRingCount,
     const displayOnly = query.get('displayOnly') === 'true';
     if (query.size !== (displayOnly ? 2 : 1) || !validDate(query.get('date')))
       return { status: 400, body: { code: 'INVALID_DATE' } };
-    const owner = await auth.me(token);
+    const owner = await timeDisplay('auth', () => auth.me(token));
     if (owner.status !== 200) return owner;
     const date = query.get('date');
-    const row = (await pool.query(`SELECT COALESCE(e.available, 0)::text AS ert_balance,
+    const row = (await timeDisplay('m2e_db', () => pool.query(`SELECT COALESCE(e.available, 0)::text AS ert_balance,
       s.step_cap, s.base_steps, s.extra_steps_per_ring FROM alpha_accounts a
       LEFT JOIN alpha_ert_available e ON e.account_id = a.id
       LEFT JOIN alpha_m2e_daily_snapshots s
         ON s.account_id = a.id AND s.accounting_date = $2
-      WHERE a.id = $1`, [owner.body.id, date])).rows[0];
+      WHERE a.id = $1`, [owner.body.id, date]))).rows[0];
     if (!row) return { status: 401, body: { message: 'Unauthorized.' } };
     const exact = canonicalErt(row.ert_balance);
     let dailyStepCap = null;
     if (!displayOnly) try {
-      const ringCount = await resolveEligibleRingCount(owner.body.id);
+      const ringCount = await timeDisplay('m2e_capacity', () => resolveEligibleRingCount(owner.body.id));
       const capConfig = row.step_cap === null ? config : { ...config,
         baseSteps: row.base_steps, extraStepsPerRing: row.extra_steps_per_ring };
       dailyStepCap = calculateM2eEarning({ validatedDailySteps: 0,
@@ -46,7 +47,7 @@ export function createM2eProfile({ pool, auth, resolveEligibleRingCount,
       Date.parse(`${from}T00:00:00.000Z`)) / 86_400_000 + 1;
     if (days < 1 || days > 31)
       return { status: 400, body: { code: 'INVALID_ACTIVITY_RANGE' } };
-    const owner = await auth.me(token);
+    const owner = await timeDisplay('auth', () => auth.me(token));
     if (owner.status !== 200) return owner;
     const rows = (await pool.query(`SELECT d.accounting_date::text AS date,
       d.accepted_steps, d.earned_ert::text AS earned_ert, s.step_cap

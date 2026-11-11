@@ -923,6 +923,7 @@ public final class AlphaWalletActivity extends Activity {
         AlphaSessionStore.VerifiedSession previewSession = sessions.verified();
         AlphaVisualSnapshotStore previews = new AlphaVisualSnapshotStore(this);
         long previewRevision = previews.revision();
+        long previewReadOrder = previews.beginRead();
         io.execute(() -> {
             try {
                 try { if (previewSession != null && submissions.load(accountId) == null) {
@@ -943,7 +944,7 @@ public final class AlphaWalletActivity extends Activity {
                             });
                     }
                 } } catch (Exception ignored) { previews.clear(); }
-                AlphaAuthApi.Result result = api.get("/wallet/assets", token);
+                AlphaAuthApi.Result result = api.getDisplay("/wallet/assets", token);
                 if (result.status != 200) throw new IllegalStateException("Asset reader unavailable");
                 JSONObject body = result.body;
                 WalletAssetSnapshot snapshot = WalletAssetSnapshot.from(
@@ -970,15 +971,31 @@ public final class AlphaWalletActivity extends Activity {
                     if ("SILVER_BOX".equals(assets.getJSONObject(index).getString("kind"))) boxes++;
                     else rings++;
                 }
+                JSONObject inventoryPreview = null;
+                try {
+                    JSONObject candidate = new JSONObject().put("assets", assets);
+                    xyz.etherings.player.ring.SilverInventorySnapshot.parse(candidate);
+                    inventoryPreview = candidate;
+                } catch (Exception ignored) {
+                    // Wallet's count projection may lack fields needed by Rings.
+                    // Keep its validated balances/counts; do not export an incompatible preview.
+                }
                 String silverText = boxes + " Box  |  " + rings + " Ring";
                 if (waiting) previews.clear();
                 else if (previewSession != null && token.equals(sessions.load()))
                     previews.save(previewSession.ownerId(), previewSession.lineage(), "wallet",
                             new JSONObject().put("address", expectedAddress).put("sol", snapshot.sol)
-                                    .put("eru", snapshot.eru).put("boxes", boxes).put("rings", rings), previewRevision);
+                                    .put("eru", snapshot.eru).put("boxes", boxes).put("rings", rings)
+                                    .put("silver", inventoryPreview), previewRevision, previewReadOrder);
                 runOnUiThread(() -> {
                     if (isFinishing() || isDestroyed() || request != generation ||
                             !token.equals(sessions.load())) return;
+                    if (!waiting && previews.revision() != previewRevision) {
+                        availableEru = null;
+                        send.setEnabled(false);
+                        sendState.setText("Wallet changed. Reopen Wallet to check current data.");
+                        return;
+                    }
                     availableEru = snapshot.eru;
                     sol.setText(snapshot.sol);
                     eru.setText(snapshot.eru);

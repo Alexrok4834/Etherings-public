@@ -15,6 +15,7 @@ This timeline comes from the project's development Git records and release recei
 | 9 October 2026 | **1.2.1a** | Improved recovery when a Silver Ring action takes too long to confirm, clearer guidance when test SOL is insufficient, and automatic retry of a newly awarded Box's opening readiness. |
 | 4 November 2026 | **1.3.0a** | Password confirmation during registration, sale labels on listed Rings and Boxes, clearer Draw affordability, and a corrected Cooper Ring reveal. Reopening Home with a Silver Ring selected avoids one wait. |
 | 8 November 2026 | **1.3.1a** | Saved screen contents appear sooner after restarting. Repeated inventory and step-display checks do less work while current ownership and action checks remain in place. |
+| 11 November 2026 | **1.3.2a** | Improved inventory previews, fewer duplicate reads, recovery from loading errors and stable sale labels during refresh. |
 
 The signed **1.1.1a** build was used on test devices on 7 October for Box and artwork corrections. It was **not** published as a public release. The current published version is **1.3.1a**; see the [latest release](https://github.com/Alexrok4834/Etherings-public/releases/latest) and [download page](https://app.etherings.xyz/download/android/etherings.apk).
 

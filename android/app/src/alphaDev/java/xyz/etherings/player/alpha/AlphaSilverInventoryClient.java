@@ -30,9 +30,12 @@ public final class AlphaSilverInventoryClient {
         String token = sessions.load();
         if (token == null) throw new IllegalStateException("Alpha session unavailable");
         AlphaAuthApi.Result response = new AlphaAuthApi(context, BuildConfig.ALPHA_DEV_API_BASE_URL)
-                .get(listings ? "/silver/inventory?listings=true" : "/silver/inventory", token);
+                .getDisplay(listings ? "/silver/inventory?listings=true" : "/silver/inventory", token);
         if (!token.equals(sessions.load())) throw new IllegalStateException("Alpha session changed");
-        if (response.status != 200) throw new IllegalStateException("Silver inventory unavailable");
+        if (response.status != 200) {
+            AlphaDisplayDiagnostics.http(false, listings, response.status);
+            throw new IllegalStateException("Silver inventory unavailable");
+        }
         return SilverInventorySnapshot.parse(response.body);
     }
 

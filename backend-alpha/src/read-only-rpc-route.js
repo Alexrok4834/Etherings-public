@@ -1,3 +1,4 @@
+import { timeDisplay } from './display-timing.js';
 // Routes an entire authenticated read response. Never use for transaction paths.
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { createSolanaRpc } from '@solana/kit';
@@ -60,7 +61,9 @@ export function createScopedReadRpc(url, scope, createRpc = createSolanaRpc) {
         const request = rpc[method](...args);
         return { send(options = {}) {
           context.signal.throwIfAborted();
-          return request.send({ ...options, abortSignal: context.signal });
+          const abortSignal = options.abortSignal
+            ? AbortSignal.any([context.signal, options.abortSignal]) : context.signal;
+          return timeDisplay('rpc.' + method, () => request.send({ ...options, abortSignal }));
         } };
       };
     },

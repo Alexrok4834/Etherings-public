@@ -18,9 +18,9 @@ EtheRings is an Android game where your everyday steps help you build a collecti
 
 **The Public Alpha is live on Android 9+ and Solana Devnet.** Come play, explore what's working, and help us make the game better.
 
-[**Download Public Alpha 1.3.1a**](https://app.etherings.xyz/download/android/etherings.apk) · [**Join our Discord**](https://discord.gg/99VN2uQ4GJ) · [Latest release](https://github.com/Alexrok4834/Etherings-public/releases/latest) · [Website](https://etherings.xyz/) · [Alpha Whitepaper](docs/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf)
+[**Download Public Alpha 1.3.2a**](https://app.etherings.xyz/download/android/etherings.apk) · [**Join our Discord**](https://discord.gg/99VN2uQ4GJ) · [Latest release](https://github.com/Alexrok4834/Etherings-public/releases/latest) · [Website](https://etherings.xyz/) · [Alpha Whitepaper](docs/EtheRings_Public_Alpha_Whitepaper_2026-10.pdf)
 
-**New in 1.3.1a:** Home, Rings and Wallet can restore their last checked contents after an app restart. Repeated inventory checks do less work when your items have not changed. Actions still wait for current information.
+**New in 1.3.2a:** Smoother inventory refreshes, fewer duplicate reads, and sale labels that stay visible when returning from Wallet. Saved items remain a preview until current information arrives.
 
 ## What can you do in Alpha?
 

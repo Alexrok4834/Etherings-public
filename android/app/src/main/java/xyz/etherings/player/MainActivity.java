@@ -62,6 +62,8 @@ import xyz.etherings.player.api.EtheringsApi;
 import xyz.etherings.player.alpha.AlphaLaunchGate;
 import xyz.etherings.player.alpha.AlphaSessionStore;
 import xyz.etherings.player.alpha.AlphaVisualSnapshotStore;
+import xyz.etherings.player.alpha.AlphaDisplayDiagnostics;
+import xyz.etherings.player.alpha.AlphaDisplayReadRecovery;
 import xyz.etherings.player.economy.ErtValue;
 import xyz.etherings.player.auth.LoginSessionService;
 import xyz.etherings.player.auth.LoginUiState;
@@ -1840,6 +1842,7 @@ public class MainActivity extends Activity {
     private void loadAlphaHome() {
         int request = ++alphaSilverGeneration;
         long previewRevision = new AlphaVisualSnapshotStore(this).revision();
+        long previewReadOrder = new AlphaVisualSnapshotStore(this).beginRead();
         boolean previouslySilver = alphaRingEquipment != null &&
                 "SILVER_RING".equals(alphaRingEquipment.selection.kind);
         alphaHomeRefreshing = true;
@@ -1847,7 +1850,6 @@ public class MainActivity extends Activity {
         copperRingRetryView.setVisibility(View.GONE);
         if (alphaRingEquipment != null && alphaHomeCoopers != null) renderAlphaHome();
         alphaScreenIo.execute(() -> {
-            restoreAlphaPreview("home", request, previewRevision);
             List<CopperRing> coopers = null;
             AlphaRingEquipmentSnapshot equipment = null;
             SilverInventorySnapshot inventory = null;
@@ -1864,6 +1866,8 @@ public class MainActivity extends Activity {
                             (SilverInventorySnapshot) Class.forName(
                                     "xyz.etherings.player.alpha.AlphaSilverInventoryClient")
                                     .getMethod("load", android.content.Context.class).invoke(null, this)) : null;
+            // Start fresh reads before disk/image decoding for the visual preview.
+            restoreAlphaPreview("home", request, previewRevision);
             try {
                 coopers = cooperRead.get();
                 equipment = equipmentRead.get();
@@ -1872,15 +1876,21 @@ public class MainActivity extends Activity {
                             (SilverInventorySnapshot) Class.forName(
                             "xyz.etherings.player.alpha.AlphaSilverInventoryClient")
                             .getMethod("load", android.content.Context.class).invoke(null, this);
-            } catch (Exception ignored) { }
+            } catch (Exception error) {
+                AlphaDisplayDiagnostics.failure(AlphaDisplayDiagnostics.Stage.HOME_READ, error);
+            }
             List<CopperRing> loadedCoopers = coopers;
             AlphaRingEquipmentSnapshot loadedEquipment = equipment;
             SilverInventorySnapshot loadedInventory = inventory;
             runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed() || selectedMode != Mode.WALK ||
                         request != alphaSilverGeneration) return;
-                if (loadedCoopers == null || loadedEquipment == null ||
+                if (new AlphaVisualSnapshotStore(this).revision() != previewRevision ||
+                        loadedCoopers == null || loadedEquipment == null ||
                         ("SILVER_RING".equals(loadedEquipment.selection.kind) && loadedInventory == null)) {
+                    AlphaDisplayDiagnostics.rejected(AlphaDisplayDiagnostics.Stage.HOME_REJECT,
+                            new AlphaVisualSnapshotStore(this).revision() != previewRevision,
+                            loadedCoopers != null, loadedEquipment != null, loadedInventory != null);
                     alphaHomeRefreshing = false;
                     new AlphaVisualSnapshotStore(this).clear();
                     alphaRingEquipment = null;
@@ -1902,7 +1912,7 @@ public class MainActivity extends Activity {
                 alphaHomeCoopers = loadedCoopers;
                 alphaRingEquipment = loadedEquipment;
                 alphaHomeRefreshing = false;
-                saveAlphaPreview("home", previewRevision);
+                saveAlphaPreview("home", previewRevision, previewReadOrder);
                 renderAlphaHome();
             });
             if (loadedInventory != null) alphaSilverMediaIo.execute(() -> {
@@ -2016,11 +2026,61 @@ public class MainActivity extends Activity {
         }
     }
 
+    private static final class AlphaInventoryRead {
+        final AlphaStarterSnapshot starter;
+        final SilverInventorySnapshot silver;
+        final AlphaRingEquipmentSnapshot equipment;
+        AlphaInventoryRead(AlphaStarterSnapshot starter, SilverInventorySnapshot silver,
+                AlphaRingEquipmentSnapshot equipment) {
+            this.starter = starter; this.silver = silver; this.equipment = equipment;
+        }
+    }
+
+    private AlphaInventoryRead readAlphaInventory(boolean readOnly, Runnable afterStart) throws Exception {
+        Future<AlphaStarterSnapshot> starterRead = alphaAssetReadIo.submit(() ->
+                (AlphaStarterSnapshot) Class.forName("xyz.etherings.player.alpha.AlphaStarterClient")
+                        .getMethod(readOnly ? "loadReadOnly" : "load", android.content.Context.class)
+                        .invoke(null, this));
+        Future<SilverInventorySnapshot> silverRead = alphaAssetReadIo.submit(() ->
+                (SilverInventorySnapshot) Class.forName("xyz.etherings.player.alpha.AlphaSilverInventoryClient")
+                        .getMethod("loadForCollection", android.content.Context.class).invoke(null, this));
+        Future<AlphaRingEquipmentSnapshot> equipmentRead = alphaAssetReadIo.submit(() ->
+                (AlphaRingEquipmentSnapshot) Class.forName("xyz.etherings.player.alpha.AlphaRingEquipmentClient")
+                        .getMethod("load", android.content.Context.class).invoke(null, this));
+        afterStart.run();
+        AlphaStarterSnapshot starter = null;
+        SilverInventorySnapshot silver = null;
+        AlphaRingEquipmentSnapshot equipment = null;
+        Exception failure = null;
+        // Settle all initial reads before recovery so it cannot join an older unfinished GET.
+        try { starter = starterRead.get(); }
+        catch (java.util.concurrent.ExecutionException error) {
+            AlphaDisplayDiagnostics.failure(AlphaDisplayDiagnostics.Stage.RINGS_STARTER, error);
+            failure = error;
+        }
+        try { silver = silverRead.get(); }
+        catch (java.util.concurrent.ExecutionException error) {
+            if (starter == null || !"awaiting_wallet".equals(starter.silverStatus())) {
+                AlphaDisplayDiagnostics.failure(AlphaDisplayDiagnostics.Stage.RINGS_INVENTORY, error);
+                if (failure == null) failure = error;
+            }
+        }
+        try { equipment = equipmentRead.get(); }
+        catch (java.util.concurrent.ExecutionException error) {
+            AlphaDisplayDiagnostics.failure(AlphaDisplayDiagnostics.Stage.RINGS_EQUIPMENT, error);
+            if (failure == null) failure = error;
+        }
+        if (failure != null) throw failure;
+        if ("awaiting_wallet".equals(starter.silverStatus())) silver = SilverInventorySnapshot.empty();
+        return new AlphaInventoryRead(starter, silver, equipment);
+    }
+
     private void loadAlphaSilverInventory() {
         int request = ++alphaSilverGeneration;
         long previewRevision = new AlphaVisualSnapshotStore(this).revision();
-        alphaSilverListedMints = Collections.emptySet();
-        alphaSilverListingsUnavailable = false;
+        long previewReadOrder = new AlphaVisualSnapshotStore(this).beginRead();
+        // Retained cards keep their listing state until fresh data replaces it.
+        // alphaInventoryRefreshing marks the preview and blocks asset actions.
         boolean reopenCooper = alphaCooperDetail;
         String reopenCooperId = alphaCooperDetailId;
         alphaInventoryRefreshing = true;
@@ -2038,38 +2098,39 @@ public class MainActivity extends Activity {
         if (alphaSilverInventory != null && alphaStarterInventory != null &&
                 alphaRingEquipment != null) renderAlphaSilverInventory();
         alphaScreenIo.execute(() -> {
-            restoreAlphaPreview("rings", request, previewRevision);
-            SilverInventorySnapshot result = null;
-            AlphaStarterSnapshot starter = null;
-            AlphaRingEquipmentSnapshot equipment = null;
-            Future<AlphaStarterSnapshot> starterRead = alphaAssetReadIo.submit(() ->
-                    (AlphaStarterSnapshot) Class.forName(
-                            "xyz.etherings.player.alpha.AlphaStarterClient")
-                            .getMethod("load", android.content.Context.class).invoke(null, this));
-            Future<SilverInventorySnapshot> silverRead = alphaAssetReadIo.submit(() ->
-                    (SilverInventorySnapshot) Class.forName(
-                            "xyz.etherings.player.alpha.AlphaSilverInventoryClient")
-                            .getMethod("loadForCollection", android.content.Context.class).invoke(null, this));
-            Future<AlphaRingEquipmentSnapshot> equipmentRead = alphaAssetReadIo.submit(() ->
-                    (AlphaRingEquipmentSnapshot) Class.forName(
-                            "xyz.etherings.player.alpha.AlphaRingEquipmentClient")
-                            .getMethod("load", android.content.Context.class).invoke(null, this));
+            AlphaSessionStore readSessions = new AlphaSessionStore(this);
+            AlphaSessionStore.VerifiedSession readSession = readSessions.verified();
+            java.util.function.BooleanSupplier sameSession = () -> {
+                AlphaSessionStore.VerifiedSession current = readSessions.verified();
+                return readSession != null && current != null &&
+                        readSession.ownerId().equals(current.ownerId()) &&
+                        java.util.Objects.equals(readSession.lineage(), current.lineage()) &&
+                        (readSession.lineage() != null || readSession.token().equals(current.token()));
+            };
+            AlphaDisplayReadRecovery.Result<AlphaInventoryRead> loaded = null;
             try {
-                starter = starterRead.get();
-                if ("awaiting_wallet".equals(starter.silverStatus())) {
-                    result = SilverInventorySnapshot.empty();
-                } else {
-                    result = silverRead.get();
-                }
-                equipment = equipmentRead.get();
-            } catch (Exception ignored) { }
-            SilverInventorySnapshot snapshot = result;
-            AlphaStarterSnapshot starterSnapshot = starter;
-            AlphaRingEquipmentSnapshot equipmentSnapshot = equipment;
+                loaded = AlphaDisplayReadRecovery.read(
+                        () -> new AlphaVisualSnapshotStore(this).revision(),
+                        sameSession,
+                        () -> readAlphaInventory(false,
+                                () -> restoreAlphaPreview("rings", request, previewRevision)),
+                        () -> readAlphaInventory(true, () -> { }));
+            } catch (Exception error) {
+                AlphaDisplayDiagnostics.failure(AlphaDisplayDiagnostics.Stage.RINGS_REJECT, error);
+            }
+            long verifiedRevision = loaded == null ? previewRevision : loaded.revision;
+            SilverInventorySnapshot snapshot = loaded == null ? null : loaded.value.silver;
+            AlphaStarterSnapshot starterSnapshot = loaded == null ? null : loaded.value.starter;
+            AlphaRingEquipmentSnapshot equipmentSnapshot = loaded == null ? null : loaded.value.equipment;
             runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed() || selectedMode != Mode.RINGS ||
                         request != alphaSilverGeneration) return;
-                if (snapshot == null || starterSnapshot == null || equipmentSnapshot == null) {
+                if (new AlphaVisualSnapshotStore(this).revision() != verifiedRevision ||
+                        !sameSession.getAsBoolean() ||
+                        snapshot == null || starterSnapshot == null || equipmentSnapshot == null) {
+                    AlphaDisplayDiagnostics.rejected(AlphaDisplayDiagnostics.Stage.RINGS_REJECT,
+                            new AlphaVisualSnapshotStore(this).revision() != verifiedRevision,
+                            starterSnapshot != null, snapshot != null, equipmentSnapshot != null);
                     alphaInventoryRefreshing = false;
                     new AlphaVisualSnapshotStore(this).clear();
                     alphaSilverInventory = null;
@@ -2091,7 +2152,7 @@ public class MainActivity extends Activity {
                 alphaStarterInventory = starterSnapshot;
                 alphaRingEquipment = equipmentSnapshot;
                 alphaInventoryRefreshing = false;
-                saveAlphaPreview("rings", previewRevision);
+                saveAlphaPreview("rings", verifiedRevision, previewReadOrder);
                 if (reopenCooper && starterSnapshot.findCooper(reopenCooperId) != null) {
                     alphaCooperDetail = true;
                     alphaCooperDetailId = reopenCooperId;
@@ -2145,7 +2206,7 @@ public class MainActivity extends Activity {
         });
     }
 
-    private void saveAlphaPreview(String screen, long revision) {
+    private void saveAlphaPreview(String screen, long revision, long readOrder) {
         AlphaSessionStore.VerifiedSession session = new AlphaSessionStore(this).verified();
         if (session == null || alphaRingEquipment == null || !alphaRingEquipment.effectsEnabled) return;
         try {
@@ -2157,7 +2218,7 @@ public class MainActivity extends Activity {
             if ("rings".equals(screen)) body.put("starter", alphaStarterInventory.cooper().toJson())
                     .put("silverStatus", alphaStarterInventory.silverStatus());
             alphaScreenIo.execute(() -> new AlphaVisualSnapshotStore(this).save(
-                    session.ownerId(), session.lineage(), screen, body, revision));
+                    session.ownerId(), session.lineage(), screen, body, revision, readOrder));
         } catch (Exception ignored) { }
     }
 
@@ -2193,8 +2254,8 @@ public class MainActivity extends Activity {
                         store.revision() != revision || current == null ||
                         !session.lineage().equals(current.lineage()) || !session.ownerId().equals(current.ownerId())) return;
                 boolean home = "home".equals(screen);
-                if (home ? selectedMode != Mode.WALK || !alphaHomeRefreshing || alphaHomeCoopers != null :
-                        selectedMode != Mode.RINGS || !alphaInventoryRefreshing || alphaStarterInventory != null) return;
+                if (home ? selectedMode != Mode.WALK || !alphaHomeRefreshing :
+                        selectedMode != Mode.RINGS || !alphaInventoryRefreshing) return;
                 alphaRingEquipment = equipment;
                 alphaHomeCoopers = coopers;
                 alphaSilverInventory = silver;
@@ -2208,7 +2269,10 @@ public class MainActivity extends Activity {
                     renderAlphaSilverInventory();
                 }
             });
-        } catch (Exception ignored) { store.clear(); }
+        } catch (Exception error) {
+            AlphaDisplayDiagnostics.failure(AlphaDisplayDiagnostics.Stage.PREVIEW_RENDER, error);
+            store.clear();
+        }
     }
 
     private void renderAlphaSilverInventory() {
@@ -3707,6 +3771,10 @@ public class MainActivity extends Activity {
 
     private void performAlphaCooperAllocation(CopperRing ring, CopperAttributeAllocation allocation) {
         if (alphaCooperProgressInFlight) return;
+        int generation = alphaSilverGeneration;
+        AlphaSessionStore.VerifiedSession session = new AlphaSessionStore(this).verified();
+        if (session == null) return;
+        AlphaStarterSnapshot baseline = alphaStarterInventory;
         String signature = ring.id() + ":" + ring.unspentAttributePoints() + ":" +
                 allocation.comfort() + ":" + allocation.charm() + ":" +
                 allocation.quality() + ":" + allocation.luck();
@@ -3715,24 +3783,50 @@ public class MainActivity extends Activity {
         renderAlphaCooperDetail();
         alphaSilverIo.execute(() -> {
             String failure = null;
-            try { alphaCooperCall("allocate", new Class<?>[] { android.content.Context.class,
+            JSONObject response = null;
+            try { response = alphaCooperCall("allocate", new Class<?>[] { android.content.Context.class,
                     String.class, int.class, int.class, int.class, int.class, int.class,
                     String.class }, this, ring.id(), ring.unspentAttributePoints(),
                     allocation.comfort(), allocation.charm(), allocation.quality(),
                     allocation.luck(), key); }
-            catch (Exception error) { failure = error.getMessage(); }
+            catch (Exception error) { failure = error.getMessage() == null ?
+                    "Allocation result unavailable" : error.getMessage(); }
+            AlphaStarterSnapshot projection = null;
+            if (failure == null) {
+                try { projection = xyz.etherings.player.ring.AlphaCooperAllocationUpdate
+                        .apply(baseline, ring, allocation, key, response); }
+                catch (Exception error) { failure = "Allocation result needs verification"; }
+            }
             String problem = failure;
+            AlphaStarterSnapshot updated = projection;
+            long completedRevision = new AlphaVisualSnapshotStore(this).revision();
             runOnUiThread(() -> {
                 alphaCooperProgressInFlight = false;
+                AlphaSessionStore.VerifiedSession current = new AlphaSessionStore(this).verified();
+                if (isFinishing() || isDestroyed() || generation != alphaSilverGeneration ||
+                        current == null || !session.ownerId().equals(current.ownerId()) ||
+                        !java.util.Objects.equals(session.lineage(), current.lineage()) ||
+                        (session.lineage() == null && !session.token().equals(current.token()))) return;
                 if (problem == null) {
                     pendingAlphaAllocation.clear();
                     copperAttributeDraft = null;
                     showCopperLevelMessage("Points applied", allocation.total() +
                             " accumulated points distributed.");
+                    if (baseline == alphaStarterInventory && alphaCooperDetail &&
+                            ring.id().equals(alphaCooperDetailId) && !alphaInventoryRefreshing &&
+                            completedRevision == new AlphaVisualSnapshotStore(this).revision()) {
+                        alphaStarterInventory = updated;
+                        // Home obtains fresh Cooper/M2E data on entry. Disk previews remain
+                        // invalidated by POST; old NFT checks are not given a new timestamp.
+                        alphaHomeCoopers = null;
+                        renderAlphaCooperDetail();
+                        return;
+                    }
                     loadAlphaSilverInventory();
                 } else {
                     showCopperLevelMessage("Point distribution unavailable", problem);
-                    if (alphaCooperDetail) renderAlphaCooperDetail();
+                    // Keep the idempotency key on an unknown result; do not apply an optimistic delta.
+                    loadAlphaSilverInventory();
                 }
             });
         });

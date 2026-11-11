@@ -1,8 +1,8 @@
 {
-  "versionCode": 50,
-  "displayVersion": "1.3.1a",
+  "versionCode": 55,
+  "displayVersion": "1.3.2a",
   "required": true,
   "downloadUrl": "https://app.etherings.xyz/download/android/etherings.apk",
-  "sizeBytes": 123050250,
-  "sha256": "724771c6307186dbcc91ecf2862ede4e23bdba63572fffed14d9198d34398998"
+  "sizeBytes": 123066634,
+  "sha256": "ab3bd47cfa904217165ae31a26b35143c793c6e4e2f6a3f4e19be1430ebfc700"
 }

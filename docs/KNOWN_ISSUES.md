@@ -1,5 +1,10 @@
 # Known Public Alpha issues
 
+## Checked for 1.3.2a
+
+Ring and Box NFT sale labels now stay visible while inventory refreshes after Wallet. This was verified on Samsung A8 with build55. The candidate inventory-loading failure was corrected before release. These checks did not include a new transaction or walking session; existing device-specific step reports remain separate.
+
+
 This is a player-readable summary of reports and release checks through 8 November 2026. It contains no tester account, wallet or device identifier. A report means a player observed a problem; it does not automatically establish a common cause.
 
 | Area | What players reported | Current status |

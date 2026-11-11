@@ -1,3 +1,4 @@
+import { displayTimingHandler } from './display-timing.js';
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { createIpfsMedia } from './ipfs-media.js';
@@ -18,7 +19,7 @@ export function createAlphaServer(auth, wallet, eru = null, silver = null,
   marketplace = null, silverDirectTransfer = null, operationalStats = null,
   adminEruTransfer = null, adminDashboard = null, adminCooperGrant = null,
   adminBoxGrant = null) {
-  return createServer(async (request, response) => {
+  return createServer(displayTimingHandler(async (request, response) => {
     if (request.method === 'GET' && request.url === '/admin') {
       response.writeHead(200, { 'content-type': 'text/html; charset=utf-8',
         'cache-control': 'no-store',
@@ -254,5 +255,5 @@ export function createAlphaServer(auth, wallet, eru = null, silver = null,
     }
     response.writeHead(result.status, { 'content-type': 'application/json', 'cache-control': 'no-store' });
     response.end(result.body === null ? '' : JSON.stringify(result.body));
-  });
+  }, { enabled: process.env.ALPHA_DISPLAY_TIMING === '1' }));
 }

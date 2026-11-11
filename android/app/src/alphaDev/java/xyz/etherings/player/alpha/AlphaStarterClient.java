@@ -54,6 +54,19 @@ public final class AlphaStarterClient {
         return parseInventory(response.body);
     }
 
+    /** Recovery reads existing ownership only; it must not repeat starter issuance. */
+    public static AlphaStarterSnapshot loadReadOnly(Context context) throws Exception {
+        AlphaSessionStore sessions = new AlphaSessionStore(context);
+        String token = sessions.load();
+        if (token == null) throw new IllegalStateException("Alpha session unavailable");
+        AlphaAuthApi.Result response = new AlphaAuthApi(context, BuildConfig.ALPHA_DEV_API_BASE_URL)
+                .get("/starter/inventory", token);
+        if (!token.equals(sessions.load()) || response.status != 200)
+            throw new IllegalStateException("Alpha Cooper inventory unavailable");
+        return new AlphaStarterSnapshot(CopperRing.fromJson(response.body.getJSONObject("ring")),
+                "unknown", parseInventory(response.body));
+    }
+
     static List<CopperRing> parseInventory(JSONObject body) throws Exception {
         CopperRing starter = CopperRing.fromJson(body.getJSONObject("ring"));
         JSONArray items = body.getJSONArray("rings");

@@ -1,3 +1,4 @@
+import { timeDisplay } from './display-timing.js';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { isDeepStrictEqual } from 'node:util';
 import { serialize } from 'node:v8';
@@ -132,7 +133,7 @@ export function createVerifiedDisplayReader({ rpc, createReader, now = Date.now 
         if (entry) {
           try {
             const age = now() - entry.at;
-            if (age >= 0 && age < RETAIN_MS && await unchanged(entry))
+            if (age >= 0 && age < RETAIN_MS && await timeDisplay('snapshot_check', () => unchanged(entry)))
               return structuredClone(entry.value);
           } catch (error) { remove(key); throw error; }
           remove(key);
@@ -141,7 +142,7 @@ export function createVerifiedDisplayReader({ rpc, createReader, now = Date.now 
           accounts: new Map(), queries: new Map() };
         // Call with original reader as this: nested validations are captured as
         // one dependency set rather than recursively reusing other entries.
-        const value = await scope.run(trace, () => target[method](...args));
+        const value = await timeDisplay('snapshot_rebuild', () => scope.run(trace, () => target[method](...args)));
         if (trace.safe && trace.genesis && trace.accounts.size + trace.queries.size > 0) {
           const copy = structuredClone(value);
           const bytes = serialize({ key, trace, value: copy }).byteLength;
